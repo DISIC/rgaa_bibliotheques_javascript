@@ -1,0 +1,912 @@
+<!doctype html>
+<html lang="fr">
+<head>
+	<meta charset="utf-8">
+	<title>Tutoriels -  SGMAP</title>
+	<link href="../bower_components/bootstrap/dist/css/bootstrap.css" rel="stylesheet">
+	<link href="../bower_components/bootstrapaccessibilityplugin/bs3.1.1/css/docs.min.css" rel="stylesheet">
+	<link href="../bower_components/jquery-ui/themes/base/all.css" rel="stylesheet" />
+	<link href="../bower_components/highlightjs/styles/monokai_sublime.css" rel="stylesheet"/>
+	<style type="text/css">
+		*:focus {
+			border : 2px solid red !important;
+		}
+		.ui-progressbar {
+			position: relative;
+		}
+		.progress-label {
+			position: absolute;
+			left: 50%;
+			top: 4px;
+			font-weight: bold;
+			text-shadow: 1px 1px 0 #fff;
+		}
+		#dialog-link {
+			padding: .4em 1em .4em 20px;
+			text-decoration: none;
+			position: relative;
+		}
+		#dialog-link span.ui-icon {
+			margin: 0 5px 0 0;
+			position: absolute;
+			left: .2em;
+			top: 50%;
+			margin-top: -8px;
+		}
+		#slider {
+			margin: 20px;
+		}
+		pre{
+			background: #23241F;
+		}
+		.bs-example:after{
+			content: "Exemple";
+		}
+	</style>
+</head>
+<body>
+	<header class="navbar navbar-inverse navbar-static-top" role="banner">
+		<div class="container">
+			<div class="navbar-header">
+				<a href="index.html" class="navbar-brand">SGMAP</a>
+			</div>
+			<nav class="collapse navbar-collapse bs-navbar-collapse">
+				<ul class="nav navbar-nav">
+					<li>
+						<a href="index.html">Tutoriel</a>
+					</li>
+					<li class="active">
+						<a href="jquery-ui.html">Jquery-ui</a>
+					</li>
+					<li>
+						<a href="angular-ui.html">Angular-ui</a>
+					</li>
+					<li>
+						<a href="react-bootstrap.html">React Bootstrap</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</header>
+	<main role="main" class="container">
+		<section>
+		<header>
+			<h1>JQuery + JQuery-ui <small>Tutoriel composants d’interface JavaScript</small></h1>
+			<p class="lead">JQuery UI components V1.11.2 + jQuery JavaScript Library v1.11.2</p>
+		</header>
+
+		<ul class="list-inline" id="overview">
+			<li lang="en"><a href="#progressbar_link">Progressbar</a></li>
+			<li lang="en"><a href="#slider_link">Slider</a></li>
+			<li lang="en"><a href="#dialog_link">Dialog</a></li>
+			<li lang="en"><a href="#accordion_link">Accordion</a></li>
+			<li lang="en"><a href="#autocomplete_link">Autocomplete</a></li>
+			<li lang="en"><a href="#datepicker_link">Datepicker</a></li>
+		</ul>
+
+		<article>
+			<header>
+				<h2>Méthodologie</h2>
+			</header>
+			<p>Pour la bibliothèque <a lang="en" href="https://jqueryui.com" target="_blank" title="jQuery-ui - Nouvelle fenêtre">jQuery-ui</a>, on va créer des widgets qui vont étendre des composants déjà existants. Par exemple, pour créer un widget de boîte de dialogue qui va étendre le widget existant <code lang="en">ui.dialog</code> : </p>
+			<div class="highlight-doc">
+				<pre><code class="js" data-lang="js" lang="en">(function ($) {
+	$.widget( 'ui.dialog', $.ui.dialog, {
+		// code
+	});
+}(jQuery));</code></pre>
+			</div>
+			<p><a href="http://api.jqueryui.com/jQuery.widget/">Voir la documentation des créations de widgets JQuery-ui</a></p>
+			<p>Une fois le widget créé, il faut éviter de ré-écrire tout le contenu des méthodes surchargées. Pour cela, on va utiliser la méthode <code lang="en">this._super();</code> du même nom que le widget parent, avec les arguments spécifiés (s'il y en a). Voici la syntaxe à utiliser pour créer un widget JQuery-ui qui étend le composant <code lang="en">ui.dialog</code>, et qui surcharge la fonctione <code lang="en">open: function() {…}</code></p>
+			<div class="highlight-doc">
+				<pre><code class="js" data-lang="js" lang="en">(function ($) {
+	$.widget( 'ui.dialog', $.ui.dialog, {
+		open: function() {
+			// surcharge avant
+			this._super(); // lance la fonction 'open' du widget ui.dialog parent
+			// surcharge après
+		}
+	});
+}(jQuery));</code></pre>
+			</div>
+		</article>
+
+		<article>
+		<header>
+			<h2 id="progressbar_link" tabindex="-1" lang="en">Progressbar</h2>
+		</header>
+
+		<h3>Démonstration</h3>
+
+		<div class="bs-example" data-example-id="progressbar">
+			<p>Du contenu avec un <a href="#">lien</a> avant le composant</p>
+
+			<p id="description-composant">Description du composant</p>
+
+			<div id="progressbar">
+				<div class="progress-label">en attente...</div>
+			</div>
+
+			<p><button id="progressbutton">Lancer la progression</button></p>
+
+			<div id="region">Région mise à jour par la <span lang="en">progressbar</span></div>
+
+			<p>Du contenu avec un <a href="#">lien</a> après le composant</p>
+		</div>
+
+		<p>Pour ce composant, les erreurs relevées sont :</p>
+		<ul>
+			<li>l’absence de titre du composant, aucun titre ne sera vocalisé lors de la prise de focus sur le composant ;</li>
+			<li>l’absence de valeur enrichie qui sera verbalisée à la place de la valeur courante de la barre de progression (par exemple, si la barre de progression est à 20%, les <abbr title="technologies d'assistance">TA</abbr> doivent pouvoir verbaliser “chargement en cours 20% - copie des fichiers”) et enfin si la barre de progression décrit la progression du chargement d’une zone particulière d’une page ;</li>
+			<li>la zone concernée doit pouvoir être informée de l’état de la progression, et l’internaute doit être informé que la zone concernée par la mise à jour est en train d’être modifiée.</li>
+		</ul>
+
+		<h3>Correctifs appliqués</h3>
+
+		<p>Pour corriger les problèmes d’accessibilité, nous avons ajouté quatre nouveaux arguments lors de l’initialisation de la barre de progression :</p>
+		<ul>
+			<li><code lang="en">ariaValuetextSuffix</code> et <code lang="en">ariaValuetextPrefix</code> afin de pouvoir créer la valeur enrichie à partir de la valeur <code lang="en">aria-value</code> et ainsi la préfixer et la suffixer.</li>
+			<li><code lang="en">region</code> : afin de définir si une zone particulière est mise à jour par le chargement de la barre de progression</li>
+			<li><code lang="en">labelledby</code> : afin de définir une alternative au composant, ce paramètre peut être une chaîne de caractères ou alors une référence à un nœud du <abbr title="Document Object Model" lang="en">DOM</abbr>.</li>
+		</ul>
+		<div class="highlight-doc">
+			<pre class="pre-scrollable"><code class="js" data-lang="js" lang="en">$( "#progressbar").progressbar({
+	ariaValuetextSuffix : 'suffix',
+	ariaValuetextPrefix : 'prefix',
+	region : $('#region'),
+	labelledby : $('#description-composant')
+});</code></pre>
+		</div>
+
+		<p>Création de l'extension du module <span lang="en">Progressbar</span> : </p>
+		<div class="highlight-doc">
+			<pre class="pre-scrollable"><code class="js" data-lang="js" lang="en">(function ($) {
+	'use strict';
+	// Progressbar Extension
+	// ===============================
+	$.widget( 'ui.progressbar', $.ui.progressbar, {
+
+	});
+}(jQuery));</code></pre>
+		</div>
+
+		<div class="bs-callout bs-callout-info">
+			<h4>Gestion de la description du composant</h4>
+			<p>Afin que le composant ait une description, on va étendre la fonction <code lang="en">_create(){…}</code> et tester si l’argument <code lang="en">labelledby</code> est défini, et si c’est le cas, on va de nouveau tester si c’est une chaîne de caractères : </p>
+			<ul>
+				<li>si c'est une chaîne de caractères, on va ajouter un attribut <code lang="en">title</code></li>
+				<li>sinon on ajoute l’attribut <code lang="en">aria-labelledby</code></li>
+			</ul>
+		</div>
+		<div class="highlight-doc">
+			<pre class="pre-scrollable"><code class="js" data-lang="js" lang="en">(function($) {
+    $.widget('ui.progressbar', $.ui.progressbar, {
+        _create: function(event, index) {
+
+            // Si un labelledby est défini
+            if (typeof(this.options.labelledby !== typeof undefined)) {
+                if (jQuery.type(this.options.labelledby) === 'string') {
+                    // si la région est définie en string, on ajoute un attr 'title'
+                    this.element.attr('title', this.options.labelledby);
+                } else if (jQuery.type(this.options.labelledby) === 'object') {
+                    // sinon, on ajout l'id du node associé dans le aria-labelledby
+                    this.element.attr('aria-labelledby', this.options.labelledby[0].id);
+                }
+            }
+
+            // appel de la fonction _create du composant étendu
+            this._super(event, index);
+
+        },
+
+    });
+}(jQuery));</code></pre>
+		</div>
+
+		<div class="bs-callout bs-callout-info">
+			<h4>Gestion d’une zone mise à jour par la barre de progression</h4>
+			<p>Si l’attribut <code lang="en">region</code> est défini, on va ajouter un attribut <code lang="en">aria-describedby</code> sur cette zone afin de décrire la zone par le composant. À chaque fois qu’on mettera à jour la valeur de progression du composant, on va vérifier si la progression est en cours, on va ajouter l’attribut <code lang="en">aria-busy</code> et le définir à <code lang="en">true</code>.Quand la valeur de la barre de progression est à son maximum, on va de nouveau définir l’attribut <code lang="en">aria-busy</code> à <code lang="en">false</code>.</p>
+		</div>
+		<div class="highlight-doc">
+			<pre class="pre-scrollable"><code class="js" data-lang="js" lang="en">(function($) {
+    $.widget('ui.progressbar', $.ui.progressbar, {
+        _create: function(event, index) {
+
+            // Si une région est définie
+            if (typeof(this.options.region !== typeof undefined)) {
+                // si la région est définie en string, on recherche le node avec l'id associé
+                if (jQuery.type(this.options.region) === 'string') {
+                    this.options.region = $('#' + this.options.region);
+                }
+                this.options.region.attr('aria-describedby', this.element[0].id);
+            }
+
+            // appel de la fonction _create du composant étendu
+            this._super(event, index);
+
+        },
+        _refreshValue: function(event, index) {
+
+            // appel de la fonction _refreshValue du composant étendu
+            this._super(event, index);
+
+            if (typeof(this.options.region !== typeof undefined)) {
+                if (this.options.value === this.options.max) {
+                    // Suppression de l'attribut aria-busy si on est arrivés au bout de la progressbar
+                    this.options.region.attr('aria-busy', false);
+                } else if (!this.indeterminate && this.options.value !== 0) {
+                    this.options.region.attr('aria-busy', true);
+                }
+            }
+
+        }
+    });
+}(jQuery));</code></pre>
+		</div>
+
+		<div class="bs-callout bs-callout-info">
+			<h4>Gestion de la description enrichie</h4>
+			<p>Si les arguments <code lang="en">ariaValuetextPrefix</code> et <code lang="en">ariaValuetextSuffix</code> sont définis, on les utilise pour créer une description enrichie à partir de la valeur courante de la barre de progression en tant que préfixe et suffixe de cette valeur. Puis on met à jour cette valeur à chaque modification de la valeur du composant. On fait attention à bien supprimer cet attribut lorsque la barre de progression n’est pas ou plus active (c’est-à-dire que la progression est terminée ou pas encore lancée). On en profite aussi pour corriger une petite anomalie qui correspond à la non définition de l’attribut <code lang="en">aria-valuemax</code> s’il en existe un.
+			</p>
+		</div>
+		<div class="highlight-doc">
+			<pre class="pre-scrollable"><code class="js" data-lang="js" lang="en">(function($) {
+    $.widget('ui.progressbar', $.ui.progressbar, {
+        _create: function(event, index) {
+
+            if (typeof(this.element.attr('aria-valuemax')) === typeof undefined) {
+                this.element.attr('aria-valuemax', this.options.max);
+            }
+
+            // appel de la fonction _create du composant étendu
+            this._super(event, index);
+
+        },
+        _destroy: function(event, index) {
+
+            // Suppression de l'attribut aria-valuetext si on détruit la barre de progression
+            var attr = this.element.attr('aria-valuetext');
+            if (typeof attr !== typeof undefined && attr !== false) {
+                this.element.removeAttr('aria-valuetext');
+            }
+
+            // appel de la fonction _destroy du composant étendu
+            this._super(event, index);
+
+        },
+        _refreshValue: function(event, index) {
+
+            // appel de la fonction _refreshValue du composant étendu
+            this._super(event, index);
+
+            // Mise à jour de l'attribut aria-valuetext
+            if (!this.indeterminate) {
+                var valuetext = this.options.value;
+                if (typeof(this.options.ariaValuetextPrefix !== typeof undefined)) {
+                    valuetext = this.options.ariaValuetextPrefix + ' ' + valuetext;
+                }
+                if (typeof(this.options.ariaValuetextSuffix !== typeof undefined)) {
+                    valuetext += ' ' + this.options.ariaValuetextSuffix;
+                }
+                this.element.attr({
+                    'aria-valuetext': valuetext
+                });
+            }
+
+        }
+    });
+}(jQuery));</code></pre>
+		</div>
+		</article>
+
+		<!-- Slider -->
+		<article>
+		<header>
+			<h2 id="slider_link" tabindex="-1" lang="en">Slider</h2>
+		</header>
+		<h3>Démonstration</h3>
+
+		<div class="bs-example">
+			<p>Du contenu avec un <a href="#">lien</a> avant le composant</p>
+
+			<div id="slider"></div>
+
+			<div id="slider_label">Message via <code lang="en">aria-labelledby</code></div>
+
+			<p>Du contenu avec un <a href="#">lien</a> après le composant</p>
+		</div>
+
+		<p>Pour ce composant, les erreurs relevées sont :</p>
+		<ul>
+			<li>aucun motif de conception n'est défini (<code lang="en">role="slider"</code>), ce qui implique que les <abbr title="technologies d'assitance">TA</abbr> ne savent pas comment implémenter leur assistance ;</li>
+			<li>l’absence de titre du composant : aucun titre ne sera vocalisé lors de la prise de focus sur le composant ;</li>
+			<li>l'absence d'indication de valeurs minimale et maximale du <span lang="en">slider</span>, ainsi que la valeur courante de la position du <span lang="en">slider</span></li>
+			<li>l’absence de valeur enrichie qui doit être verbalisée à la place de la valeur courante du slider et qui peut être composée de la valeur courante, et d'un texte en suffixe ;</li>
+		</ul>
+
+		<h3>Correctifs appliqués</h3>
+
+		<p>Pour corriger les problèmes d’accessibilité, nous avons ajouté deux nouveaux arguments lors de l’initialisation du slider :</p>
+		<ul>
+			<li><code lang="en">ariaValuetext</code> afin de pouvoir créer la valeur enrichie à partir de la valeur <code lang="en">aria-value</code> et ainsi la préfixer et la suffixer.</li>
+			<li><code lang="en">labelledby</code> : afin de définir une alternative au composant, ce paramètre peut être une chaîne de caractères ou alors une référence à un nœud du <abbr title="Document Object Model" lang="en">DOM</abbr>. Cet attribut doit être un tableau afin de pouvoir définir deux valeurs dans le cas des <span lang="en">sliders</span> à intervalles. Même si ces derniers ne rentrent pas dans le cas de l'étude, on ne souhaite pas induire d'anomalies pour cette configuration de <span lang="en">slider</span>.</li>
+		</ul>
+		<div class="highlight-doc">
+			<pre class="pre-scrollable"><code class="js" data-lang="js" lang="en">$( "#slider" ).slider({
+	ariaValuetext: '€',
+	labelledby: [$('#slider_label')]
+});</code></pre>
+		</div>
+
+		<p>Création de l'extension du module <span lang="en">Slider</span> : </p>
+		<div class="highlight-doc">
+			<pre class="pre-scrollable"><code class="js" data-lang="js" lang="en">(function ($) {
+  $.widget( 'ui.slider', $.ui.slider, {
+
+  });
+}(jQuery));</code></pre>
+		</div>
+
+		<div class="bs-callout bs-callout-info">
+			<h4>Définition du motif de conception</h4>
+			<p>On va étendre la fonction <code lang="en">_createHandles(){…}</code> pour ajouter un attribut <code lang="en">role="slider"</code> sur le composant.</p>
+		</div>
+		<div class="highlight-doc">
+			<pre class="pre-scrollable"><code class="js" data-lang="js" lang="en">$.widget( 'ui.slider', $.ui.slider, {
+    _createHandles: function () {
+      this._super();
+      var  attrHandle,
+      options = this.options;
+      this.handles.each(function(index) {
+        //Set constant attribut
+        attrHandle = {
+          'role':'slider'
+        };
+
+        $(this).attr(attrHandle);
+      });
+    }
+  });</code></pre>
+		</div>
+
+		<div class="bs-callout bs-callout-info">
+			<h4>Définition du titre du composant</h4>
+			<p>On va étendre la fonction <code lang="en">_createHandles(){…}</code> et tester si l’argument <code lang="en">labelledby</code> est défini, et si c’est le cas, on va de nouveau tester si c’est une chaîne de caractères :</p>
+			<ul>
+				<li>si c'est le cas, on ajoute un attribut <code lang="en">title</code> sur le composant</li>
+				<li>sinon on ajoute l’attribut <code lang="en">aria-labelledby</code> sur le composant</li>
+			</ul>
+			<p class="text-danger">Attention, à la différence du composant <span lang="en">progressbar</span>, cet argument est un tableau <span lang="en">JavaScript</span>, par exemple : <code lang="en">labelledby: ['value 1', 'value 2']</code> ; afin de rester compatible avec les <span lang="en">sliders</span>  à intervalles (même s'i 'ils ne rentrent pas dans le cadre cette étude) et de ne pas attribuer deux fois le même titre sur les deux curseurs du composant.</p>
+		</div>
+		<div class="highlight-doc">
+			<pre class="pre-scrollable"><code class="js" data-lang="js" lang="en">$.widget( 'ui.slider', $.ui.slider, {
+    _createHandles: function () {
+      this._super();
+      var  attrHandle,
+      options = this.options;
+      this.handles.each(function(index) {
+       if (typeof(options.labelledby[index] !== typeof undefined)) {
+          if(jQuery.type(options.labelledby[index]) === 'string') {
+            attrHandle.title =  options.labelledby[index];
+          }else if(jQuery.type(options.labelledby[index]) === 'object' && options.labelledby[index].length > 0){
+            attrHandle['aria-labelledby'] =  options.labelledby[index][0].id;
+          }
+        }
+
+        $(this).attr(attrHandle);
+      });
+    }
+  });</code></pre>
+		</div>
+
+		<div class="bs-callout bs-callout-info">
+			<h4>Définition des valeurs minimale et maximale du composant et mise à jour de la valeur courante et de la valeur enrichie.</h4>
+			<p>Lors de la création des curseurs, on va leur définir les attributs constants <code lang="en">aria-valuemin</code> et <code lang="en">aria-valuemax</code>.
+			Si le <span lang="en">slider</span> à une valeur définie par défaut, c'est aussi à ce moment qu'on va générer les attributs <code lang="en">aria-valuenow</code> et <code lang="en">aria-valuetext</code> (ce dernier n'est défini que si l'argument <code lang="en">ariaValuetext</code> est défini).</p>
+			<p>La mise à jour des attributs concernant la valeur courante et la valeur enriche se faisant à plusieurs endroits, cela a été externalisé dans une fonction <code lang="en">_updateHandles{…}</code> qui est appelée lors de la création des curseurs, et dans la fonction liée a leur déplacement (<code lang="en">_slide{…}</code>).</p>
+		</div>
+		<div class="highlight-doc">
+			<pre class="pre-scrollable"><code class="js" data-lang="js" lang="en">$.widget( 'ui.slider', $.ui.slider, {
+    _createHandles: function () {
+      this._super();
+      var newVal, attrHandle,
+      self = this,
+      options = this.options;
+      this.handles.each(function(index) {
+        //Set constant attribut
+        attrHandle = {
+          'role':'slider',
+          'aria-valuemin':options.min,
+          'aria-valuemax':options.max,
+        };
+
+        $(this).attr(attrHandle);
+
+        //Set live attribut
+        if ( options.values && options.values.length ) {
+          newVal = self.values( index );
+        } else {
+          newVal = self.value();
+        }
+        self._updateHandles(index, newVal);
+      });
+    },
+    _slide: function(event, index, newVal) {
+      this._super(event, index, newVal);
+      //Set live attribut
+      this._updateHandles(index, newVal);
+    },
+    _updateHandles: function(index, newVal) {
+      var options = this.options,
+          attrHandle = {};
+
+      if (options.ariaValuetext) {
+            attrHandle['aria-valuetext'] =  newVal + ' ' + options.ariaValuetext;
+      }
+
+      attrHandle['aria-valuenow'] =  newVal;
+      $(this.handles[index]).attr(attrHandle);
+    }
+  });</code></pre>
+		</div>
+		</article>
+
+		<!-- Dialog -->
+		<article>
+		<header>
+			<h2 id="dialog_link" tabindex="-1" lang="en">Dialog</h2>
+		</header>
+		<h3>Démonstration</h3>
+
+		<div class="bs-example">
+			<p>Du contenu avec un <a href="#">lien</a> avant lien qui ouvre le composant</p>
+
+			<p><a href="#" id="dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>Ouvrir</a></p>
+
+			<p>Du contenu avec un <a href="#">lien</a> après le lien qui ouvre le composant</p>
+
+			<!-- ui-dialog -->
+			<div id="dialog" title="Titre de la fenêtre">
+				<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+				<p>lorem ipsum <a href="#">focus me</a></p>
+			</div>
+
+			<p>Du contenu avec un <a href="#">lien</a> après le composant</p>
+		</div>
+
+		<p>Pour ce composant, les erreurs relevées sont :</p>
+		<ul>
+			<li>Lors de l'ouverture du composant, le focus n'est pas donné sur le premier élément focusable, cela pertube les utilisateurs du clavier ou d'autres <abbr title="technologies d'assitance">TA</abbr>. Car lors de l'ouverture d'un composant <span class="en">dialog</span>, le contexte change, et la navigation au clavier est restreinte à l'intérieur du composant. Il faut donc qu'on place le focus sur le premier élément focusable comme si on naviguait dans une page à part entière.</li>
+		</ul>
+
+		<h3>Correctifs appliqués</h3>
+
+		<p>	Donc, pour corriger le problème d’accessibilité, il faut pouvoir identifier chaque composant de <span lang="en">dialog</span>, pour ce faire, nous allons utiliser un argument déjà existant "<code lang="en">dialogClass</code>" afin d'identifier la boite de dialog.</p>
+		<p class="text-danger">Attention, il faut être vigilant, car on utilise une <span lang="en">class</span> pour identifier la boîte de dialogue, ce qui n'est pas un élément unique dans la page. Mais l'argument pour attribuer une <span lang="en">class</span> est déjà présent dans la biliothèque du composant <span class="en">dialog</span>, à la différence d'un identifiant.</p>
+		<div class="highlight-doc">
+			<pre class="pre-scrollable"><code class="js" data-lang="js" lang="en">$( "#dialog" ).dialog({
+	dialogClass: "id-dialog",
+	autoOpen: false
+});</code></pre>
+		</div>
+
+		<p>Création de l'extension du module Dialog : </p>
+		<div class="highlight-doc">
+			<pre class="pre-scrollable"><code class="js" data-lang="js" lang="en">(function ($) {
+	$.widget( 'ui.dialog', $.ui.dialog, {
+
+	});
+}(jQuery));</code></pre>
+		</div>
+
+
+		<div class="bs-callout bs-callout-info">
+			<h4>Gestion du focus lors de l'ouverture de la boîte de dialogue</h4>
+			<p>Lors de l'ouverture de la boîte de dialogue et après le test de la présence de l'attribut <code lang="en">dialogClass</code>, on redonne le focus sur le premier élément trouvé focusable.</p>
+		</div>
+		<div class="highlight-doc">
+			<pre class="pre-scrollable"><code class="js" data-lang="js" lang="en">(function ($) {
+	$.widget( 'ui.dialog', $.ui.dialog, {
+
+		open: function() {
+			this._super();
+
+			if (this.options.dialogClass !== null && this.options.dialogClass !== '') {
+				var elementsFocusable = $('.' + this.options.dialogClass + ' :focusable');
+				if (elementsFocusable[0]) {
+					elementsFocusable[0].focus();
+				}
+			}
+		}
+
+	});
+}(jQuery));</code></pre>
+		</div>
+		</article>
+
+		<!-- accordion -->
+		<article>
+		<header>
+			<h2 id="accordion_link" tabindex="-1">Accordion</h2>
+		</header>
+		<h3>Démonstration</h3>
+
+		<div class="bs-example">
+			<p>Du contenu avec un <a href="#">lien</a> avant le composant</p>
+
+			<div id="accordion">
+				<h3>Premier</h3>
+				<div>
+					<p>Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet.
+						<br /><br /><a href="#">link</a><br /><br />
+						<input type="button" id="btn3"  value="Bouton 1">
+					</p>
+				</div>
+				<h3>Deuxième</h3>
+				<div>
+					<p>
+						Phasellus mattis tincidunt nibh.
+						<br /><br /><input type="button" id="btn4" value="Bouton 2">
+					</p>
+				</div>
+				<h3>Troisième</h3>
+				<div>
+					<p>Nam dui erat, auctor a, dignissim quis.</p>
+				</div>
+			</div>
+
+			<p>Du contenu avec un <a href="#">lien</a> après le composant</p>
+		</div>
+
+		<p>Pour ce composant, les erreurs relevées sont :</p>
+		<ul>
+			<li>Le titre possède la propriété <code lang="en">aria-expanded="false"</code> lorsque le panneau est masqué par défaut, mais si on ouvre puis on ferme un panneau alors la propriété <code lang="en">aria-expanded</code> reste à <code lang="en">true</code> alors qu'elle devrait être repassée à <code lang="en">false</code>. Cela signifie qu'en manipulant le composant, l'utilisateur peut avoir un décalage entre l'information qu'il perçoit et la réalité sur l'ouverture des panneaux.</li>
+		</ul>
+
+		<div class="bs-callout bs-callout-danger">
+			<p>Lors de la rédaction de ce tutoriel, la bibliothèque JQuery-ui à été mise a jour et est passée de la version 1.11.2 à la version 1.11.4, et dans le <span lang="en">changelog</span> de la version 1.11.3, il est indiqué une correction relative à l'attribut <code lang="en">aria-expanded</code>, nous n'avons pas encore testé la mise a jour, mais il se pourrait que cela corrige le seul soucis de ce composant. <a href="http://jqueryui.com/changelog/1.11.3/">Voir le <span lang="en">changelog</span> de la version 1.11.3</a></p>
+		</div>
+
+		<h3>Correctifs appliqués</h3>
+
+		<p>Création de l'extension du module <span lang="en">Accordion</span> : </p>
+		<div class="highlight-doc">
+			<pre class="pre-scrollable"><code class="js" data-lang="js" lang="en">(function ($) {
+	'use strict';
+
+	// Accordion Extension
+	// ===============================
+
+	$.widget( 'ui.accordion', $.ui.accordion, {
+
+	});
+}(jQuery));</code></pre>
+		</div>
+
+		<div class="bs-callout bs-callout-info">
+			<h4>Gestion de l'attribut <code lang="en">aria-expanded</code></h4>
+			<p>Ajout d'un test <code lang="en">typeof(data.newHeader[0]) === typeof undefined</code> afin de savoir si aucun élément sélectionné après la mise a jour de l'attribut <code lang="en">aria-expanded</code>. Dans ce cas, on donne à l'attribut <code lang="en">aria-expanded</code> la valeur <code lang="en">false</code>. Ce test vérifie aussi si le panneau précédemment ouvert existe bien.</p>
+		</div>
+		<div class="highlight-doc">
+			<pre class="pre-scrollable"><code class="js" data-lang="js" lang="en">(function ($) {
+	'use strict';
+
+	// Accordion Extension
+	// ===============================
+
+	$.widget( 'ui.accordion', $.ui.accordion, {
+
+		_toggleComplete: function(data) {
+
+			this._super( data );
+			if(
+				typeof(data.newHeader[0]) === typeof undefined &&
+				typeof(data.oldHeader[0]) !== typeof undefined &&
+				typeof($('#'+data.oldHeader[0].id)) !== typeof undefined
+			) {
+				$('#' + data.oldHeader[0].id).attr('aria-expanded', false);
+			}
+		}
+
+	});
+}(jQuery));</code></pre>
+		</div>
+		</article>
+
+
+		<!-- autocomplete -->
+		<article>
+		<header>
+			<h2 id="autocomplete_link" tabindex="-1" lang="en">Autocomplete</h2>
+		</header>
+		<h3>Démonstration</h3>
+
+		<div class="bs-example">
+			<p>Du contenu avec un <a href="#">lien</a> avant le composant</p>
+
+			<p><label for="autocomplete">étiquette du champ autocomplete : </label><input type="text" id="autocomplete" /></p>
+
+			<p>Du contenu avec un <a href="#">lien</a> après le composant</p>
+		</div>
+
+		<p>Pour ce composant, les erreurs relevées sont :</p>
+		<ul>
+			<li>Le composant ne possède pas la propriété <code lang="en">role="combobox"</code></li>
+			<li>Le composant ne possède pas la propriété <code lang="en">aria-haspopup="false"</code></li>
+			<li>Le champ de saisie ne possède pas la propriété <code lang="en">role="textbox"</code> ?</li>
+			<li>Le champ de saisie ne possède pas la propriété <code lang="en">aria-autocomplete="list"</code> ?</li>
+			<li>Le champ de saisie ne possède pas la propriété <code lang="en">aria-activedescendant="ID_option_selectionnée"</code></li>
+			<li>Le champ de saisie ne possède pas la propriété <code lang="en">aria-owns="ID_liste"</code></li>
+		</ul>
+
+		<h3>Solution alternative</h3>
+
+		<div class="bs-callout bs-callout-warning">
+			<h4>Pourquoi avoir choisi une solution alternative ?</h4>
+			<p>Les nombre d'erreurs de ce composant, et la complexité de la mise en œuvre d'une correction ne nous permettent pas la correction de ce composant. L'alternative à un composant d'autocomplétion peut-être très variable en fonction de la nature de l'autocomplétion. Selon les cas il peut s'agir :</p>
+			<ul>
+				<li>D'une liste déroulante (balise <abbr title="Hypertext Markup Language" lang="en">HTML</abbr> <code lang="en">select</code>) la recherche par autocomplétion est alors remplacé par la recherche par caractères dans une liste déroulante.</li>
+				<li> D'une page regroupant tous les termes impactés par l'autocomplétion et traité sous la forme de lien de requête serveur. Là aussi le système d'autocomplétion est alors remplacé par la recherche plein texte dans la liste des liens.</li>
+				<li>Utiliser un élément <code lang="en">datalist</code> <abbr title="Hypertext Markup Language 5" lang="en">HTML 5</abbr>, qui permet de monter une autocomplétion "accessible" mais, malheureusement son support est encore très limité par les navigateurs (<a href="http://caniuse.com/#search=datalist">voir le support de la balise <code lang="en">datalist</code></a>). </li>
+			</ul>
+		</div>
+
+		</article>
+
+		<!-- datepicker -->
+		<article>
+		<header>
+			<h2 id="datepicker_link" tabindex="-1" lang="en">Datepicker</h2>
+		</header>
+		<h3>Démonstration</h3>
+
+		<div class="bs-example">
+			<p>Du contenu avec un <a href="#">lien</a> avant le composant</p>
+
+			<p><label for="datepicker">étiquette du champ de date (au format jj/mm/aaaa) : </label><input type="text" id="datepicker" placeholder="exemple : 22/07/1984"/></p>
+
+			<p>Du contenu avec un <a href="#">lien</a> après le composant</p>
+		</div>
+
+		<p>Pour ce composant, les erreurs relevées sont :</p>
+		<ul>
+			<li>L’absence de description du composant, et de sémantique adaptée au composant, ce qui ne permet pas aux <abbr title="technologies d'assistance">TA</abbr> de savoir si une date est sélectionnée ou pas, ni de connaître le jour de la semaine et le mois lié à une date lorsqu'on parcrours le tableau :
+				<ul>
+					<li>Chaque groupe de titres de jours et de numéros ne possède pas d'attribut <code lang="en">role="grid"</code></li>
+					<li>Chaque groupe de titres de jours et de numéros ne possède pas la propriété <code lang="en">aria-labelledby="[ID_titre]"</code> référençant le passage de texte contenant le mois et l'année du calendrier en cours. Donc lorsqu'une synthèse vocale passera sur les numéros de jour, aucune information sur le mois du jour qu'il est en train de parcourir ne sera donnée.</li>
+					<li>Aucun titre de jour ne possède un attribut <code lang="en">role="columnheader"</code></li>
+					<li>Aucune ligne qui contient les numéros de jours ne possède un attribut <code lang="en">role="row”</code></li>
+					<li>Aucun numéro de jour ne possède un attribut <code lang="en">role="gridcell"</code></li>
+					<li>Pour caque jour sélectionné il ne possède pas la propriété <code lang="eb">aria-selected="true"</code>, et inversement.</li>
+				</ul>
+			</li>
+			<li>Non conformité de l'ensemble des interactions clavier :
+				<ul>
+					<li>De l'extérieur du composant, l'utilisation de la touche <kbd>Tabulation</kbd> ne donne pas le focus sur le jour en cours.</li>
+					<li>Depuis le composant, l'utilisation de la touche <kbd>Tabulation</kbd> ne donne pas le focus sur l'élément focusable suivant à l'extérieur du composant.</li>
+					<li>Depuis un numéro de jour, l'utilisation de la touche de direction <kbd title="haut">↑</kbd> ne déplace pas le focus sur le même jour de la semaine précédente.</li>
+					<li>Depuis un numéro de jour, l'utilisation de la touche de direction <kbd title="bas">↓</kbd> ne déplace pas le focus sur le même jour de la semaine suivante</li>
+					<li>Depuis un numéro de jour, l'utilisation de la touche de direction <kbd title="droite">→</kbd> ne déplace pas le focus sur le jour suivant.</li>
+					<li>Depuis un numéro de jour, l'utilisation de la touche de direction <kbd title="gauche">←</kbd> ne déplace pas le focus sur le jour précedent.</li>
+					<li>Si le calendrier est une fenêtre, la touche  <kbd>Echap</kbd> ne permet pas de fermer la fenêtre.</li>
+					<li>Lors de l'utilisation de la touche <kbd>Echap</kbd>, le focus n'est pas redonné, si nécessaire, à l'élément ayant ouvert le calendrier.</li>
+					<li>Si le calendrier est une fenêtre rattachée au champ, le focus n'est pas redonné au champ mis à jour lors de l'utilisation de la touche <kbd>Entrée</kbd>.</li>
+				</ul>
+			</li>
+		</ul>
+
+		<h3>Solution alternative appliquée</h3>
+		<ul>
+			<li>Le datepicker doit être caché à la restitution d'écran, pour ne pas avoir à vocaliser l'intégralité du tableau de dates, grâce à l’attribut <code lang="en">aria-hidden="true"</code> ainsi que pour le bouton d'accès au composant ;</li>
+			<li>Interdire la navigation au clavier dans le composant avec l’attribut <code lang="en">tabindex="-1"</code> ainsi que pour le bouton d'accès au composant ;</li>
+			<li>Lors de la sélection d'une date, on replace le curseur dans le champ lié au composant.</li>
+		</ul>
+		<div class="bs-callout bs-callout-warning">
+			<h4>Pourquoi avoir choisi une solution alternative ?</h4>
+			<p>Étant donné le volume d'erreurs, et considérant que ce calendrier n'apporte pas d'informations (cf. il n'indique pas une sélection de jours réservables ou disponibles, toutes les dates sont sélectionnables), il est considéré comme un outil de confort ou d'assistance à la saisie. De ce fait, il est préférable de rendre invisible ce calendrier pour les personnes naviguant au clavier ou utilisant des <abbr title="technologies d'assitance">TA</abbr> plutôt que d'avoir a parcourir au clavier ou a vocaliser un tableau de dates relativemenet long et mal formaté.</p>
+			<p>Néanmoins, pour les personnes n'ayant pas la possibilité d'avoir l'aide de ce calendrier de saisie, il faut leur indiquer quel est le format de date attendu dans l'étiquette du champ de formulaire, et un exemple de date saisie avec l'attribut <code lang="en">placeholder="…"</code></p>
+		</div>
+
+		<div class="bs-callout bs-callout-info">
+			<h4>Mise en place de la solution alternative</h4>
+			<p>Lors de l'appel du composant, l'attribut <code lang="en">onClose</code> est utilisé pour redonner le <span lang="en">focus</span> au champ de formulaire lorsque le composant est fermé : <code lang="en">$( '#datepicker' ).focus();</code>.</p>
+			<p>Dans notre exemple, le bouton d'ouverture du calendrier doit être rendu inaccessible au clavier : <code lang="en">$('#datepicker').next().attr('tabindex', '-1');</code>, et le calendrier lui-même ne doit pas être vocalisé : <code lang="en">$('#ui-datepicker-div').attr('aria-hidden', 'true');</code>, et les élements <span lang="en">focusables</span> ne doivent plus l'être : <code lang="en">$('#ui-datepicker-div :focusable').attr('tabindex', '-1');</code>.</p>
+		</div>
+		<div class="highlight-doc">
+			<pre class="pre-scrollable"><code class="js" data-lang="js" lang="en">(function ($) {
+
+	$( '#datepicker' ).datepicker({
+		showOn: 'button',
+		buttonText: 'Choisir une date',
+		onClose : function(){
+			$( '#datepicker' ).focus();
+		}
+	});
+
+	// Interdiction de la navigation au clavier dans le composant
+	$('#datepicker').next().attr('tabindex', '-1');
+	// Masquage du composant pour les technologies d'assitance
+	$('#ui-datepicker-div').attr('aria-hidden', 'true');
+	$('#ui-datepicker-div :focusable').attr('tabindex', '-1');
+
+}(jQuery));</code></pre>
+		</div>
+			
+
+
+		</article>
+
+
+		<h2>L'avis du développeur</h2>
+		<blockquote>
+		<p>Lors de l'écriture de ces correctifs, on peut voir qu'il est très simple de créer un <span lang="en">widget</span>, qui étend le fonctionnement d'un <span lang="en">widget</span> déjà existant afin d'en corriger le fonctionnement. Malheureusement, lorqu'il s'agit de modifier le <abbr title="Document Object Model" lang="en">DOM</abbr>, cela peut s'avérer parfois très long, par exemple si on devait surclasser le fonction <code lang="en">_generateHTML</code> du <span lang="en">widget</span> <span lang="en">datepicker</span>, le temps a y passer serait très long. Donc parfois, pour certains composants dit "de confort", une solution alternative est préférable.</p>
+		<p><a href="scripts/jquery-ui.js" download>Télécharger la correction des widgets jquery-ui au format JavaScript (6,7Ko)</a></p>
+		</blockquote>
+
+</main>
+
+	<footer role="contentinfo" class="navbar navbar-default navbar-static-bottom small">
+		<div class="container">
+			<h2>
+				Droits de reproduction
+				<small>Ce document est placé sous <a href="http://wiki.data.gouv.fr/wiki/Licence_Ouverte_/_Open_Licence">licence ouverte 1.0 ou ultérieure</a></small>
+			</h2>
+			<div class="row">
+				<div class="col-md-1">
+					<img src="../modernisation-logo.jpg" alt="Secrétariat général pour la modernisation de l'action publique" class="navbar-left">
+				</div>
+				<div class="col-md-5">
+					<p class="clear">Vous êtes libres de :</p>
+					<ul>
+						<li>Reproduire, copier, publier et transmettre ces informations ;</li>
+						<li>Diffuser et redistribuer ces informations ;</li>
+						<li>Adapter, modifier, extraire et transformer ces informations, notamment pour créer des informations dérivées ;</li>
+						<li>Exploiter ces informations à titre commercial, par exemple en la combinant avec d'autres informations, ou en l'incluant dans votre propre produit ou application.</li>
+					</ul>
+				</div>
+				<div class="col-md-6">
+					<p>Ces libertés s'appliquent sous réserve de mentionner la paternité de l'information d'origine : sa source et la date de sa dernière mise à jour. Le réutilisateur peut notamment s'acquitter de cette condition en indiquant un ou des liens hypertextes (URL) renvoyant vers le présent site et assurant une mention effective de sa paternité.</p><p>Cette mention de paternité ne doit ni conférer un caractère officiel à la réutilisation de ces informations, ni suggérer une quelconque reconnaissance ou caution par le producteur de l'information, ou par toute autre entité publique, du réutilisateur ou de sa réutilisation.</p>
+				</div>
+			</div>
+		</div>
+	</footer>
+
+<script src="../bower_components/jquery/dist/jquery.js"></script>
+<script src="../bower_components/jquery-ui/jquery-ui.js"></script>
+<script src="../bower_components/highlightjs/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script src="scripts/jquery-ui.js"></script>
+<script type="text/javascript">
+	/* global jQuery:false */
+	(function ($) {
+		'use strict';
+
+		/*************************************
+		* Progressbar
+		**************************************/
+		var progressbar = $( '#progressbar');
+		var progressLabel = $( '.progress-label' );
+		var progressbutton = $( '#progressbutton' );
+		progressbar.progressbar({
+			value: false,
+			ariaValuetextSuffix : '% suffix',
+			ariaValuetextPrefix : 'prefix',
+			region : $('#region'),
+			labelledby : $('#description-composant'),
+			change: function() {
+				progressLabel.text( progressbar.progressbar( 'value' ) + '%' );
+			},
+			complete: function() {
+				progressLabel.text( 'Terminé !' );
+			}
+		});
+		function progress() {
+			var val = progressbar.progressbar( 'value' ) || 0;
+
+			progressbar.progressbar( 'value', val + 2 );
+
+			if ( val < 99 ) {
+				setTimeout( progress, 500 );
+			}else{
+				progressbutton.button('enable');
+				progressbar.progressbar('value', 0);
+			}
+		}
+		progressbutton.button({ label: 'Commencer' });
+		progressbutton.click(function() {
+			progressbutton.button('disable');
+			progress();
+		});
+
+		/*************************************
+		* Slider
+		**************************************/
+		$( "#slider" ).slider({
+			ariaValuetext: '€',
+			labelledby: ['curseur simple']
+		});
+
+		/*************************************
+		* Modal
+		**************************************/
+		$( "#dialog" ).dialog({
+			dialogClass: "id-dialog",
+			autoOpen: false
+		});
+
+		// Link to open the dialog
+		$( "#dialog-link" ).click(function( event ) {
+			$( "#dialog" ).dialog( "open" );
+			event.preventDefault();
+		});
+
+		// Hover states on the static widgets
+		$( "#dialog-link, #dialog-link-2, #icons li" ).hover(
+			function() {
+				$( this ).addClass( "ui-state-hover" );
+			},
+			function() {
+				$( this ).removeClass( "ui-state-hover" );
+			}
+		);
+
+		/*************************************
+		* Accordion
+		**************************************/
+		$( '#accordion' ).accordion({
+			collapsible: true
+		});
+
+		/*************************************
+		* autocomplete
+		**************************************/
+		var availableTags = [
+			'ActionScript',
+			'AppleScript',
+			'Asp',
+			'BASIC',
+			'C',
+			'C++',
+			'Clojure',
+			'COBOL',
+			'ColdFusion',
+			'Erlang',
+			'Fortran',
+			'Groovy',
+			'Haskell',
+			'Java',
+			'JavaScript',
+			'Lisp',
+			'Perl',
+			'PHP',
+			'Python',
+			'Ruby',
+			'Scala',
+			'Scheme'
+		];
+		$( '#autocomplete' ).autocomplete({
+			source: availableTags
+		});
+
+		/*************************************
+		* datepicker
+		**************************************/
+		$( '#datepicker' ).datepicker({
+			showOn: 'button',
+			buttonText: 'Choisir une date',
+			onClose : function(){
+				$( '#datepicker' ).focus();
+			}
+		});
+
+		// Interdiction de la navigation au clavier dans le composant
+		$('#datepicker').next().attr('tabindex', '-1');
+		// Masquage du composant pour les technologies d'assitance
+		$('#ui-datepicker-div').attr('aria-hidden', 'true');
+		$('#ui-datepicker-div :focusable').attr('tabindex', '-1');
+
+
+	}(jQuery));
+</script>
+</body>
+</html>

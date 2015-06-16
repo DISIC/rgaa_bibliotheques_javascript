@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="fr">
+<head>
+	<meta charset="utf-8">
+	<title>Tutoriels -  SGMAP</title>
+	<link href="../bower_components/bootstrap/dist/css/bootstrap.css" rel="stylesheet">
+	<link href="../bower_components/bootstrapaccessibilityplugin/bs3.1.1/css/docs.min.css" rel="stylesheet">
+</head>
+<body>
+	<header class="navbar navbar-inverse navbar-static-top" role="banner">
+		<div class="container">
+			<div class="navbar-header">
+				<a href="index.html" class="navbar-brand">SGMAP</a>
+			</div>
+			<nav class="collapse navbar-collapse bs-navbar-collapse">
+				<ul class="nav navbar-nav">
+					<li class="active">
+						<a href="index.html">Tutoriel</a>
+					</li>
+					<li>
+						<a href="jquery-ui.html">Jquery-ui</a>
+					</li>
+					<li>
+						<a href="angular-ui.html">Angular-ui</a>
+					</li>
+					<li>
+						<a href="react-bootstrap.html">React Bootstrap</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</header>
+	<main role="main" class="container">
+
+		<section>
+			<h1>Tutoriel "composants d’interface JavaScript"</h1>
+
+			<article>
+				<h2>Introduction</h2>
+				<p>
+					Cette étude a été réalisée pour répondre aux exigences du <abbr title="Référentiel Général d'Accessibilité pour les Administrations version 3">RGAA 3</abbr> et aux besoins d’utiliser rapidement des composants d’interface riches accessibles (<abbr title="Web Accessibility Initiative - Accessible Rich Internet Applications" lang="en">WAI-ARIA</abbr>). De nombreuses bibliothèques JavaScript proposent des composants d’interface riches plus ou moins accessibles.
+				</p>
+				<p>
+					Quatre bibliothèques JavaScript ont été sélectionnées, avec des bibliothèques additionnelles de composants d’interface. Après en avoir testé l’accessibilité, des corrections ont été apportées si nécessaire afin de rendre ces composants conformes au RGAA 3.
+				</p>
+				<p>
+					Voici la liste des biblliothèques sélectionnées :
+				</p>
+				<ul>
+					<li lang="en">JQuery + JQuery-ui</li>
+					<li lang="en">Bootstrap + <span lang="en">plugin</span> paypal</li>
+					<li lang="en">Angular + Angular-ui Bootstrap</li>
+					<li lang="en">React + Bootstrap</li>
+				</ul>
+
+
+				<div class="bs-callout bs-callout-info">
+					<p>
+					Ce tutoriel se découpe en plusieurs parties. Après une présentation des <a href="#problemes_utilisateurs_link">problématiques fréquemment rencontrées</a> par les utilisateurs, les <a href="#consequences_techniques_link">conséquences techniques</a> liées aux questions d'accessibilité sont évoquées. Ensuite, pour chacune des bibliothèques, vous trouverez une <a href="#synthese_test_link">synthèse des tests et correctifs proposés</a>, et pourrez accéder aux tutoriels de mise en conformité, composant par composant : </p>
+					<ul>
+						<li lang="en"><a href="jquery-ui.html">JQuery + JQuery-ui</a></li>
+						<li lang="en">Bootstrap + <span lang="en">plugin</span> paypal</li>
+						<li lang="en"><a href="angular-ui.html">Angular + Angular-ui Bootstrap</a></li>
+						<li lang="en"><a href="react-bootstrap.html">React + Bootstrap</a></li>
+					</ul>
+				</div>
+			</article>
+
+			<article>
+				<h2 id="problemes_utilisateurs_link">Problèmes utilisateurs</h2>
+
+				<p>
+					Utiliser des composants JavaScript doit satisfaire aux exigences d’accessibilité communes à l’ensemble des éléments du site : un accès et une utilisation possibles au clavier, comme à la souris, et une vocalisation conforme par les lecteurs d’écran. La compatibilité des composants JavaScript avec les technologies d’assistance est rendue possible par l’utilisation de <abbr title="Web Accessibility Initiative - Accessible Rich Internet Applications" lang="en">WAI-ARIA</abbr>, et plus particulièrement par le respect des motifs de conception recommandés par le <abbr lang="en" title="World Wide Web Consortium">W3C</abbr> (<a href="http://www.w3.org/TR/wai-aria-practices/#aria_ex">http://www.w3.org/TR/wai-aria-practices/#aria_ex</a>). C'est ce qui permet de garantir la compatibilité avec les technologies d’assistance, telles que les lecteurs ou agrandisseurs d’écran et les logiciels de reconnaissance vocale utilisés par les personnes en situation de handicap... Dans le cas où cette mise en conformité n’est pas envisageable, reste à la charge du développeur la mise en place d’une alternative à la fonctionnalité proposée par le composant.
+				</p>
+
+				<p>Par exemple, lorsqu'un composant a un défaut de navigation au clavier, cela handicape :</p>
+				<ul>
+					<li>Les personnes aveugles (qui ne peuvent utiliser de périphériques comme les souris qui nécessitent une coordination de l’œil et de la main)</li>
+					<li>Les personnes malvoyantes (qui peuvent avoir du mal à trouver ou à suivre le symbole du pointeur sur l'écran)</li>
+					<li>Certaines personnes ayant des tremblements de la main, qui trouvent l'utilisation de la souris très difficile et se servent donc habituellement d'un clavier</li>
+				</ul>
+
+				<p>
+					Ou alors si un composant a un défaut de description ou d'alternative cela rend impossible pour les technologies d'assistance la lecture du texte à haute voix, ou la conversion en braille. Cela handicape donc les personnes qui ont des difficultés de vision, les personnes sourdes et/ou les personnes aveugles.
+				</p>
+
+				<p>
+					Pour plus d'informations, le W3C met a disposition <a href="http://www.w3.org/Translations/NOTE-UNDERSTANDING-WCAG20-fr/">un guide pour comprendre et mettre en œuvre la version 2.0 des Règles pour l'accessibilité des contenus Web</a>
+				</p>
+			</article>
+
+			<article>
+				<h2 id="consequences_techniques_link">Conséquences techniques</h2>
+
+				<p>
+					L'accessibilité consiste à permettre aux personnes en situation de handicap d'accéder aux mêmes contenus et fonctionnalités que tout le monde, sans discrimination, et quelle que soit sa façon de consulter les pages web.
+					Or, si la meilleure façon de garantir cet égal accès est de fournir une même interface nativement accessible à toutes et tous, il peut arriver que dans certains contextes techniques, les solutions à mettre en œuvre soient excessivement complexes et donc coûteuses.
+					C'est pourquoi l'obligation légale d'accessibilité reprend la notion d'aménagement raisonnable telle que définie par la Convention relative aux droits des personnes handicapées de l'ONU :
+				</p>
+
+				<blockquote class="blockquote-reverse small">
+					<p>
+						« On entend par « aménagement raisonnable » les modifications et ajustements nécessaires et appropriés n’imposant pas de charge disproportionnée ou indue apportés, en fonction des besoins dans une situation donnée, pour assurer aux personnes handicapées la jouissance ou l’exercice, sur la base de l’égalité avec les autres, de tous les droits de l’homme et de toutes les libertés fondamentales »
+					</p>
+					<p>
+						La première attente fondamentale des utilisateurs est de pouvoir accéder aux contenus et fonctionnalités des sites publics, mais pas nécessairement sous la même forme. Mettre en place des alternatives peut être un compromis acceptable à condition qu'elles fournissent le même niveau d'information et des fonctionnalités équivalentes.
+					</p>
+					<footer>
+						Extrait du <cite><a href="https://references.modernisation.gouv.fr/sites/default/files/rgaa3_guide_accompagnement_rc2-1.pdf">guide d'accompagnement du RGAA 3</a></cite>.
+					</footer>
+				</blockquote>
+
+				<p>
+					Lorsque les développements sont jugés déraisonnables, il convient alors de mettre en place une alternative permettant de donner accès aux mêmes contenus et à des fonctionnalités similaires. C'est ainsi que nous proposons parfois des solutions alternatives à des développements jugés trop complexes par rapport au bénéfice utilisateur.
+				</p>
+
+				<p>
+					Pour chaque bibliothèque, nous avons ainsi proposé des correctifs sous forme d’extension aux composants déjà existants, ou des solutions alternatives le cas échéant. Afin d'éviter de surcharger entièrement le code du composant, nous avons décidé de les étendre (comme par exemple pour JQuery-ui). Ceci afin d'ajouter la possibilité d’utiliser de nouveaux arguments en entrée de fonction, ou bien d’étendre certaines fonctions de ces bibliothèques pour en corriger le fonctionnement.
+				</p>
+
+				<p>
+					On garde ainsi la simplicité d’utilisation de ces composants, leur appel reste exactement le même (moyennant les nouveaux arguments s'il y en a), il suffit de charger le JavaScript qui étend le composant après avoir chargé le composant lui-même.
+				</p>
+			</article>
+
+			<article>
+				<h2 id="synthese_test_link">Synthèse des tests et correctifs proposés</h2>
+
+				<h3 lang="en">JQuery UI</h3>
+				<p>
+					<span lang="en">JQuery</span> n’étant pas une bibliothèque d’interface, pour pouvoir tester des composants d’interface riche afin de savoir s’ils répondent aux exigences du RGAA 3, il a fallu choisir une bibliothèque de composants d’interface utilisant JQuery. Pour ce faire, <span lang="en">JQuery-ui</span> (<a href="https://jqueryui.com">https://jqueryui.com</a>) a été utilisée. Pour effectuer le test de ces composants, la version de <span lang="en">JQuery</span> utilisée est la 1.11.2 et celle de JQuery-ui est aussi la version 1.11.2.
+				</p>
+
+				<p>
+					Malheureusement, la bibliothèque de composants <span lang="en">JQuery-ui</span> ne dispose pas de tous les composants WAI-ARIA que nous souhaitons évaluer et corriger, certains composants n’existent pas dans la bibliothèque proposée, ou alors ne correspondent pas du tout au motif de conception (<span lang="en">Design Pattern</span>) WAI-ARIA, et dans ce cas, il seront considérés comme hors du cadre de ces tests.
+				</p>
+
+				<table class="table table-bordered">
+					<caption>Tableau des composants d’interface pour la bibliothèque <span lang="en">JQuery UI</span></caption>
+					<thead>
+						<tr>
+							<th scope="col">composant</th>
+							<th scope="col">évaluation du composant natif</th>
+							<th scope="col">correction</th>
+							<th scope="col">restitution lecteurs d'écran</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<th scope="row" lang="en">Slider</th>
+							<td class="danger">non conforme</td>
+							<td class="success">complète</td>
+							<td class="success">conforme</td>
+						</tr>
+						<tr>
+							<th scope="row" lang="en">Progressbar</th>
+							<td class="danger">non conforme</td>
+							<td class="success">complète</td>
+							<td class="success">conforme</td>
+						</tr>
+						<tr>
+							<th scope="row" lang="en">Modal - Dialog</th>
+							<td class="danger">non conforme</td>
+							<td class="success">complète</td>
+							<td class="success">conforme</td>
+						</tr>
+						<tr>
+							<th scope="row" lang="en">Tabpannel</th>
+							<td class="success">conforme</td>
+							<td class="success">aucune</td>
+							<td class="danger">non conforme sous VoiceOver</td>
+						</tr>
+						<tr>
+							<th scope="row" lang="en">Tooltip</th>
+							<td class="success">conforme</td>
+							<td class="success">aucune</td>
+							<td class="success">conforme</td>
+						</tr>
+						<tr>
+							<th scope="row" lang="en">Accordion</th>
+							<td class="danger">non conforme</td>
+							<td class="success">complète</td>
+							<td class="success">conforme</td>
+						</tr>
+						<tr>
+							<th scope="row" lang="en">Menu</th>
+							<td colspan="3">
+								non applicable <br>
+								le menu proposé par la bibliothèque s'apparente à un menu de navigation, alors que le motif de conception définit un menu applicatif
+							</td>
+						</tr>
+						<tr>
+							<th scope="row" lang="en">Buttons</th>
+							<td colspan="3">
+								non applicable <br>
+								la bibliothèque enrichit un composant natif HTML5, ce qui n’a pas d’intérêt WAI-ARIA puisque c’est le composant natif button
+							</td>
+						</tr>
+						<tr>
+							<th scope="row" lang="en">Autocomplete</th>
+							<td class="danger">non conforme</td>
+							<td class="warning" colspan="2">solution alternative</td>
+						</tr>
+						<tr>
+							<th scope="row" lang="en">Datepicker</th>
+							<td class="danger">non conforme</td>
+							<td class="warning" colspan="2">solution alternative</td>
+						</tr>
+					</tbody>
+				</table>
+
+				<h4>Voir les tutoriels des composants corrigés</h4>
+				<ul>
+					<li lang="en"><a href="jquery-ui.html#slider_link">Slider</a></li>
+					<li lang="en"><a href="jquery-ui.html#progressbar_link">Progressbar</a></li>
+					<li lang="en"><a href="jquery-ui.html#dialog_link">Dialog</a></li>
+					<li lang="en"><a href="jquery-ui.html#accordion_link">Accordion</a></li>
+					<li lang="en"><a href="jquery-ui.html#autocomplete_link">Autocomplete</a></li>
+					<li lang="en"><a href="jquery-ui.html#datepicker_link">Datepicker</a></li>
+				</ul>
+
+				<p><a href="scripts/jquery-ui.js" download>Télécharger la correction des widgets <span lang="en">jquery-ui</span> au format JavaScript (6,7Ko)</a></p>
+
+
+				<h3><span lang="en">Bootstrap components</span> avec le <span lang="en">plugin</span> "<span lang="en">Paypal Bootstrap <span lang="en">Accessibility</span></span>"</h3>
+
+				<p>Pour ces tests, nous avons ciblé les modules du <span lang="en">plugin</span> <a href="http://paypal.github.io/bootstrap-accessibility-plugin/demo.html" lang="en">Paypal Bootstrap Accessibility</a> dans sa version 1.0.4 et qui a pour dépendance le <a href="http://getbootstrap.com/javascript/" lang="en">plugin Bootstrap</a> V3.1.1 qui lui même a pour dépendance jQuery JavaScript Library v1.11.2.</p>
+
+				<table class="table table-bordered">
+					<caption>Tableau des composants d’interface pour la bibliothèque Bootstrap avec le <span lang="en">plugin</span> "<span lang="en">Paypal Bootstrap Accessibility</span>"</caption>
+					<thead>
+						<tr>
+							<th scope="col">composant</th>
+							<th scope="col">évaluation du composant natif</th>
+							<th scope="col">correction</th>
+							<th scope="col">restitution lecteurs d'écran</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<th scope="row" lang="en">Modal - Dialog</th>
+							<td class="success">conforme</td>
+							<td class="success">aucune</td>
+							<td class="success">conforme</td>
+						</tr>
+						<tr>
+							<th scope="row" lang="en">Tabpannel</th>
+							<td class="success">conforme</td>
+							<td class="success">aucune</td>
+							<td class="success">conforme</td>
+						</tr>
+						<tr>
+							<th scope="row" lang="en">Accordion</th>
+							<td class="success">conforme</td>
+							<td class="success">aucune</td>
+							<td class="success">conforme</td>
+						</tr>
+						<tr>
+							<th scope="row" lang="en">Menu</th>
+							<td colspan="3">
+								non applicable <br>
+								le menu proposé par la bibliothèque s'apparente à un menu de navigation, alors que le motif de conception définit un menu applicatif
+							</td>
+						</tr>
+					</tbody>
+				</table>
+
+				<p>Il faut donc conclure que l'accessibilité de la bibliothèque <span lang="en">Bootstrap</span> avec le <span lang="en">plugin</span> de Paypal est très forte. Si votre application le permet, malgré le faible nombre de composants proposés, il est tout a fait possible d'utiliser cette combinaison de bibliothèques pour utiliser leurs composants nativements accessibles.</p>
+
+				<h3 lang="en">Angular UI Bootstrap</h3>
+
+				<p>
+					<a href="https://angular-ui.github.io/bootstrap" target="_blank" title="Angular Bootstrap - Nouvelle fenêtre" lang="en">Angular Bootstrap</a>
+					est actuellememt l'une des librairies les plus utilisées pour <span lang="en">AngularJs</span> et offre un large panel de composants.
+				</p>
+
+				<p>Nous avons utilisé ici les versions 1.2.28 de <a href="https://code.angularjs.org/1.2.28/docs/guide" title="AngularJs - Nouvelle fenêtre" target="_blank">AngularJs</a>, et 0.12.1 de <a href="https://angular-ui.github.io/bootstrap" title="Angular Bootstrap - Nouvelle fenêtre" target="_blank" lang="en">Angular Bootstrap</a>.</p>
+
+				<table class="table table-bordered">
+					<caption>Tableau des composants d’interface pour la bibliothèque <span lang="en">Angular UI Bootstrap</span></caption>
+					<thead>
+						<tr>
+							<th scope="col">composant</th>
+							<th scope="col">évaluation du composant natif</th>
+							<th scope="col">correction</th>
+							<th scope="col">restitution lecteurs d'écran</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<th scope="row" lang="en">Slider</th>
+							<td class="danger">non conforme</td>
+							<td class="success">complète</td>
+							<td class="success">conforme</td>
+						</tr>
+						<tr>
+							<th scope="row" lang="en">Progressbar</th>
+							<td class="danger">non conforme</td>
+							<td class="success">complète</td>
+							<td class="success">conforme</td>
+						</tr>
+						<tr>
+							<th scope="row" lang="en">Modal - Dialog</th>
+							<td class="danger">non conforme</td>
+							<td class="success">complète</td>
+							<td class="success">conforme</td>
+						</tr>
+						<tr>
+							<th scope="row" lang="en">Tabpannel</th>
+							<td class="danger">non conforme</td>
+							<td class="success">complète</td>
+							<td class="info">en cours</td>
+						</tr>
+						<tr>
+							<th scope="row" lang="en">Tooltip</th>
+							<td class="danger">non conforme</td>
+							<td class="success">complète</td>
+							<td class="success">conforme</td>
+						</tr>
+						<tr>
+							<th scope="row" lang="en">Accordion</th>
+							<td class="danger">non conforme</td>
+							<td class="warning">partielle</td>
+							<td class="success">conforme</td>
+						</tr>
+						<tr>
+							<th scope="row" lang="en">Menu</th>
+							<td colspan="3">
+								non applicable <br>
+								le menu proposé par la bibliothèque s'apparente à un menu de navigation, alors que le motif de conception définit un menu applicatif
+							</td>
+						</tr>
+						<tr>
+							<th scope="row" lang="en">Radiobutton</th>
+							<td class="danger">non conforme</td>
+							<td class="success">complète</td>
+							<td class="success">conforme</td>
+						</tr>
+						<tr>
+							<th scope="row" lang="en">Checkbox</th>
+							<td class="danger">non conforme</td>
+							<td class="success">complète</td>
+							<td class="success">conforme</td>
+						</tr>
+						<tr>
+							<th scope="row" lang="en">Datepicker</th>
+							<td class="danger">non conforme</td>
+							<td class="success">complète</td>
+							<td class="success">conforme</td>
+						</tr>
+					</tbody>
+				</table>
+
+				<h4>Voir les tutoriels des composants corrigés</h4>
+				<ul>
+					<li lang="en"><a href="angular-ui.html#slider_link">Slider</a></li>
+					<li lang="en"><a href="angular-ui.html#progressbar_link">Progressbar</a></li>
+					<li lang="en"><a href="angular-ui.html#dialog_link">Dialog</a></li>
+					<li lang="en"><a href="angular-ui.html#tabpanel_link">Tabpanel</a></li>
+					<li lang="en"><a href="angular-ui.html#tooltip_link">Tooltip</a></li>
+					<li lang="en"><a href="angular-ui.html#accordion_link">Accordion</a></li>
+					<li lang="en"><a href="angular-ui.html#radiobutton_link">Radiobutton</a></li>
+					<li lang="en"><a href="angular-ui.html#checkbox_link">Checkbox</a></li>
+					<li lang="en"><a href="angular-ui.html#datepicker_link">Datepicker</a></li>
+				</ul>
+
+				<a href="scripts/angular-ui.js" download>Télécharger la correction angular-ui au format JavaScript (16Ko)</a>
+
+				<h3 lang="en">React Bootstrap</h3>
+
+				<p>
+					À l'heure des tests que nous avons effectués, la bibliothèque de composants la plus populaire
+					et la plus complète pour React semble être <span lang="en">React Bootstrap</span>.
+					Cette bibliothèque réimplémente les composants riches de la bibliothèque CSS <span lang="en">Bootstrap</span>, pour les
+					rendre facilement intégrables dans une application <span lang="en">React</span>.
+				</p>
+				<p>
+					Nous avons utilisé ici les versions 0.13.1 de <span lang="en">React</span>, et 0.19.1 de <span lang="en">React Bootstrap</span>.
+				</p>
+
+				<table class="table table-bordered">
+					<caption>Tableau des composants d’interface pour la bibliothèque <span lang="en">React Bootstrap</span></caption>
+					<thead>
+						<tr>
+							<th scope="col">composant</th>
+							<th scope="col">évaluation du composant natif</th>
+							<th scope="col">correction</th>
+							<th scope="col">restitution lecteurs d'écran</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<th scope="row" lang="en">Progressbar</th>
+							<td class="danger">non conforme</td>
+							<td class="success">complète</td>
+							<td class="success">conforme</td>
+						</tr>
+						<tr>
+							<th scope="row" lang="en">Modal - Dialog</th>
+							<td class="danger">non conforme</td>
+							<td class="success">complète</td>
+							<td class="danger">non conforme</td>
+						</tr>
+						<tr>
+							<th scope="row" lang="en">Tabpannel</th>
+							<td class="danger">non conforme</td>
+							<td class="success">complète</td>
+							<td class="success">conforme</td>
+						</tr>
+						<tr>
+							<th scope="row" lang="en">Tooltip</th>
+							<td class="danger">non conforme</td>
+							<td class="success">complète</td>
+							<td class="success">conforme</td>
+						</tr>
+						<tr>
+							<th scope="row" lang="en">Accordion</th>
+							<td class="danger">non conforme</td>
+							<td class="success">complète</td>
+							<td class="success">conforme</td>
+						</tr>
+						<tr>
+							<th scope="row" lang="en">Menu</th>
+							<td colspan="3">
+								non applicable <br>
+								le menu proposé par la bibliothèque s'apparente à un menu de navigation,
+								alors que le motif de conception définit un menu applicatif
+							</td>
+						</tr>
+					</tbody>
+				</table>
+
+				<h4>Voir les tutoriels des composants corrigés</h4>
+				<ul>
+					<li lang="en"><a href="react-bootstrap.html#tuto-modal">Modal</a></li>
+					<li lang="en"><a href="react-bootstrap.html#tuto-tooltip">Tooltip</a></li>
+					<li lang="en"><a href="react-bootstrap.html#tuto-progress-bar">Progress bar</a></li>
+					<li lang="en"><a href="react-bootstrap.html#tuto-accordion">Accordion</a></li>
+					<li lang="en"><a href="react-bootstrap.html#tuto-tabs">Tabs</a></li>
+				</ul>
+
+				<a href="scripts/react-bootstrap.js" download>
+					Télécharger la correction des composants <span lang="en">React Bootstrap</span> au format JavaScript (16,1Ko)
+				</a>
+			</article>
+
+			<article>
+				<h2>Conclusion</h2>
+				<p>
+					Ce que nous avons pu remarquer, lors des tests, c'est que seules les bibliothèques se clamant accessibles avaient fait un réel effort dans ce sens.
+					Donc il faut prendre de grandes précautions si ce n'est pas le cas. Néanmoins, il ne reste pas impossible de faire des corrections sur les
+					bibliothèques en erreur. Les corrections peuvent être plus ou moins aisées selon le composant et la bibliothèque. Une correction
+					dans le noyau d'origine de la bibliothèque sera toujours plus efficace et pérenne qu'un plugin. jQuery, AngularJs, React permettent de créer du code
+					accessible au même titre que javascript le permet. C'est son utilisation dans des bibliothèques de composants qui peut poser problème.
+					La création d'anomalies dans les bibliothèques d'origine permettra de suivre l'avancement des corrections.
+					Malgré cela nous avons rencontré des anomalies ouvertes depuis 2010 sans correction.
+				</p>
+			</article>
+
+		</section>
+	</main>
+
+	<footer role="contentinfo" class="navbar navbar-default navbar-static-bottom small">
+		<div class="container">
+			<h2>
+				Droits de reproduction
+				<small>Ce document est placé sous <a href="http://wiki.data.gouv.fr/wiki/Licence_Ouverte_/_Open_Licence">licence ouverte 1.0 ou ultérieure</a></small>
+			</h2>
+			<div class="row">
+				<div class="col-md-1">
+					<img src="../modernisation-logo.jpg" alt="Secrétariat général pour la modernisation de l'action publique" class="navbar-left">
+				</div>
+				<div class="col-md-5">
+					<p class="clear">Vous êtes libres de :</p>
+					<ul>
+						<li>Reproduire, copier, publier et transmettre ces informations ;</li>
+						<li>Diffuser et redistribuer ces informations ;</li>
+						<li>Adapter, modifier, extraire et transformer ces informations, notamment pour créer des informations dérivées ;</li>
+						<li>Exploiter ces informations à titre commercial, par exemple en la combinant avec d'autres informations, ou en l'incluant dans votre propre produit ou application.</li>
+					</ul>
+				</div>
+				<div class="col-md-6">
+					<p>Ces libertés s'appliquent sous réserve de mentionner la paternité de l'information d'origine : sa source et la date de sa dernière mise à jour. Le réutilisateur peut notamment s'acquitter de cette condition en indiquant un ou des liens hypertextes (URL) renvoyant vers le présent site et assurant une mention effective de sa paternité.</p><p>Cette mention de paternité ne doit ni conférer un caractère officiel à la réutilisation de ces informations, ni suggérer une quelconque reconnaissance ou caution par le producteur de l'information, ou par toute autre entité publique, du réutilisateur ou de sa réutilisation.</p>
+				</div>
+			</div>
+		</div>
+	</footer>
+
+</body>
+</html>

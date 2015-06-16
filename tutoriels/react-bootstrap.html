@@ -1,0 +1,1537 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+	<head>
+		<meta charset="utf-8">
+
+		<title>Tutoriels - SGMAP</title>
+
+		<link href="../bower_components/bootstrap/dist/css/bootstrap.css" rel="stylesheet">
+		<link href="../bower_components/bootstrapaccessibilityplugin/bs3.1.1/css/docs.min.css" rel="stylesheet">
+		<link href="../bower_components/jquery-ui/themes/base/all.css" rel="stylesheet" />
+		<link href="../bower_components/highlightjs/styles/monokai_sublime.css" rel="stylesheet"/>
+
+		<style type="text/css">
+			*:focus {
+				outline: 1px solid red !important;
+			}
+
+			pre {
+				background: #23241F;
+			}
+		</style>
+	</head>
+
+	<body>
+		<header class="navbar navbar-inverse navbar-static-top" role="banner">
+			<div class="container">
+				<div class="navbar-header">
+					<a href="index.html" class="navbar-brand">SGMAP</a>
+				</div>
+
+				<nav class="collapse navbar-collapse bs-navbar-collapse">
+					<ul class="nav navbar-nav">
+						<li><a href="index.html">Tutoriel</a></li>
+						<li>
+							<a href="jquery-ui.html">Jquery-ui</a>
+						</li>
+						<li>
+							<a href="angular-ui.html">Angular-ui</a>
+						</li>
+						<li class="active">
+							<a href="react-bootstrap.html">React Bootstrap</a>
+						</li>
+					</ul>
+				</nav>
+			</div>
+		</header>
+
+		<main role="main" class="container">
+			<section>
+				<header>
+					<h1 lang="en">React Bootstrap</h1>
+					<p lang="en" class="lead">React 0.13.1 - React Bootstrap 0.19.1</p>
+				</header>
+
+				<ul class="list-inline">
+					<li lang="en"><a href="#tuto-accordion">Accordion</a></li>
+					<li lang="en"><a href="#tuto-modal">Modal</a></li>
+					<li lang="en"><a href="#tuto-progress-bar">Progress bar</a></li>
+					<li lang="en"><a href="#tuto-tabs">Tabs</a></li>
+					<li lang="en"><a href="#tuto-tooltip">Tooltip</a></li>
+				</ul>
+
+				<article>
+					<header>
+						<h2>Méthodologie</h2>
+					</header>
+
+					<div>
+						<p>
+							Pour rendre accessibles les différents composants fournis par
+							<a href="http://react-bootstrap.github.io/" target="_blank" title="React Bootstrap - Nouvelle fenêtre" lang="en">React Bootstrap</a>,
+							nous avons choisi de les encapsuler dans de nouveaux composants, afin de leur
+							ajouter des fonctionnalités en présentant la même API.
+							Cela s'inscrit également dans la philosophie de <span lang="en">React</span>, qui favorise la composition
+							plutôt que l'héritage.
+						</p>
+
+						<p>La technique de base utilisée pour encapsuler les composants se présente comme suit.</p>
+						<p>
+							On dispose d'un composant simple qui place ses enfants dans une balise
+							<code lang="en">&lt;div /&gt;</code>.
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+var Original = React.createClass({
+
+	render: function() {
+		return (
+			&lt;div {...this.props}&gt;
+				{this.props.children}
+			&lt;/div&gt;
+		);
+	}
+});
+
+// utilisation
+&lt;Original id="test"&gt;
+	&lt;p&gt;I am a component&lt;/p&gt;
+&lt;/Original&gt;
+
+// rendu
+&lt;div id="test"&gt;
+	&lt;p&gt;I am a component&lt;/p&gt;
+&lt;/div&gt;
+								</code>
+							</pre>
+						</div>
+
+						<p>
+							Pour encapsuler ce composant, on le rend simplement en lui passant toutes
+							les propriétés et les enfants du wrapper. Pour l'exemple, on ajoute ici du
+							texte supplémentaire dans la balise <code lang="en">&lt;div /&gt;</code>.
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+var Wrapper = React.createClass({
+
+	render: function() {
+		return (
+			&lt;Original {...this.props}&gt;
+				&lt;p&gt;Hello&lt;/p&gt;
+				{this.props.children}
+			&lt;/Original&gt;
+		);
+	}
+});
+
+// utilisation
+&lt;Wrapper id="test"&gt;
+	&lt;p&gt;I am a component&lt;/p&gt;
+&lt;/Wrapper&gt;
+
+// rendu
+&lt;div id="test"&gt;
+	&lt;p&gt;Hello&lt;/p&gt;
+	&lt;p&gt;I am a component&lt;/p&gt;
+&lt;/div&gt;
+								</code>
+							</pre>
+						</div>
+
+						<p>
+							Ces deux composants sont donc interchangeables, et on évite de modifier le
+							code de la bibliothèque.
+						</p>
+					</div>
+				</article>
+
+				<article id="tuto-accordion">
+					<header>
+						<h2 lang="en">Accordion</h2>
+					</header>
+
+					<div>
+						<h3>Démonstration</h3>
+
+						<div id="accordion"></div>
+					</div>
+
+					<div>
+						<h3>Corrections</h3>
+
+						<p>Plusieurs améliorations sont nécessaires pour rendre ce composant accessible :</p>
+
+						<ul>
+							<li>
+								L'accordéon doit posséder un attribut <code lang="en">role="tablist"</code>
+								afin d'indiquer sa fonction
+							</li>
+							<li>Chaque titre doit posséder un attribut <code lang="en">role="tab"</code></li>
+							<li>
+								Chaque titre d'un panneau ouvert doit comporter un attribut
+								<code lang="en">aria-selected="true"</code> (ou <code lang="en">"false"</code>
+								si le panneau est fermé) pour préciser son état.
+							</li>
+							<li>Chaque panneau doit posséder un attribut <code lang="en">role="tabpanel"</code></li>
+							<li>
+								Chaque panneau doit posséder un attribut <code lang="en">aria-labelledby="id-du-titre"</code>
+								pour le lier à son titre.
+							</li>
+							<li>
+								Chaque panneau ouvert doit posséder un attribut <code lang="en">aria-hidden="false"</code>
+								(ou <code lang="en">"true"</code> s'il est fermé) pour préciser son état.
+							</li>
+							<li>
+								Depuis un titre, les touches <kbd title="haut">↑</kbd> et <kbd title="gauche">←</kbd>
+								doivent permettre d'atteindre le titre précédent.
+							</li>
+							<li>
+								Depuis un titre, les touches <kbd title="bas">↓</kbd> et <kbd title="droite">→</kbd>
+								doivent permettre d'atteindre le titre suivant.
+							</li>
+							<li>
+								Depuis un titre, la touche <kbd>Espace</kbd> doit permettre d'ouvrir
+								ou de fermer le titre correspondant.
+							</li>
+						</ul>
+
+						<p>
+							La méthode <code lang="en">render()</code> retourne un <code lang="en">Accordion</code>
+							configuré avec la clé du panneau actif et un gestionnaire d'événement qui
+							sera appelé à chaque sélection de panneau.
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+var AccessibleAccordion = React.createClass({
+
+	render: function() {
+		return (
+			&lt;Accordion
+				activeKey={this.state.activeKey}
+				onSelect={this.handleSelect}
+			&gt;
+				{this.props.children}
+			&lt;/Accordion&gt;
+		);
+	}
+});
+								</code>
+							</pre>
+						</div>
+
+						<p>
+							Il faut donc initialiser la variable d'état <code lang="en">activeKey</code>.
+							Comme dans le composant original, sa valeur est donnée par la propriété
+							<code lang="en">defaultActiveKey</code>.
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+	getInitialState: function() {
+		return {
+			activeKey: this.props.defaultActiveKey || null
+		};
+	}
+								</code>
+							</pre>
+						</div>
+
+						<p>
+							À l'initialisation du composant, on récupère les onglets et les panneaux
+							composant l'accordéon. On ajoute aussi des gestionnaires d'événements pour
+							gérer la navigation au clavier et le focus. On appelle finalement différentes
+							méthodes d'initialisation pour ne pas surcharger la méthode
+							<code class="js">componentDidMount()</code>.
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+	componentDidMount: function() {
+		this.node = React.findDOMNode(this);
+		this.tabs = this.node.querySelectorAll('.panel-heading a');
+		this.panes = this.node.getElementsByClassName('panel-collapse');
+
+		this.node.addEventListener('keydown', this.handleKeyDown);
+		document.addEventListener('focus', this.handleFocus, true);
+
+		this.setupAttributes();
+		this.setupPanesAttributes();
+		this.updatePanesAttributes();
+	}
+								</code>
+							</pre>
+						</div>
+
+						<p>Au démontage du composant, on détache les gestionnaires d'événements.</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+	componentWillUnmount: function() {
+		this.node.removeEventListener('keydown', this.handleKeyDown);
+		document.removeEventListener('focus', this.handleFocus, true);
+	}
+								</code>
+							</pre>
+						</div>
+
+						<p>
+							La méthode <code lang="en">setupAttributes()</code> initialise les attributs
+							permettant de préciser la fonction du composant.
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+	setupAttributes: function() {
+		this.node.setAttribute('role', 'tablist');
+		this.node.setAttribute('aria-multiselectable', 'false');
+	}
+								</code>
+							</pre>
+						</div>
+
+						<p>
+							La méthode <code lang="en">setupPanesAttributes()</code> initialise les
+							attributs permettant de lier les titres et les panneaux, et de préciser
+							leur état.
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+	setupPanesAttributes: function() {
+		for (var i = 0, l = this.tabs.length; i &lt; l; i++) {
+			var tab = this.tabs[i];
+			var pane = this.panes[i];
+			var id = tab.getAttribute('id');
+
+			// si l'onglet n'a pas d'id, on lui en assigne un
+			// suivant son index
+			if (!id) {
+				id = 'tab-' + i;
+				tab.setAttribute('id', id);
+			}
+
+			tab.setAttribute('role', 'tab');
+			pane.setAttribute('role', 'tabpanel');
+			pane.setAttribute('aria-labelledby', id);
+		}
+	}
+								</code>
+							</pre>
+						</div>
+
+						<p>
+							La méthode <code lang="en">updatePanesAttributes()</code> met à jour les
+							attributs précisant l'état des titres et des panneaux. On se base ici sur
+							l'attribut <code lang="en">aria-expanded</code>, déjà défini sur les
+							panneaux par la bibliothèque originale, pour en connaître l'état.
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+	updatePanesAttributes: function() {
+		for (var i = 0, l = this.panes.length; i &lt; l; i++) {
+			var tab = this.tabs[i];
+			var pane = this.panes[i];
+			var isActive = (pane.getAttribute('aria-expanded') === 'true');
+
+			pane.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+			tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+		}
+	}
+								</code>
+							</pre>
+						</div>
+
+						<p>
+							La méthode <code lang="en">handleSelect()</code> permet d'ouvrir ou de
+							refermer un panneau de l'accordéon. Une fois l'état modifié, le focus est
+							donné au panneau ouvert. Finalement, on transmet l'événement si nécessaire.
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+	handleSelect: function(key) {
+		// si le panneau demandé est déjà ouvert, on le referme
+		if (key === this.state.activeKey) {
+			key = null;
+		}
+
+		this.setState({
+			activeKey: key
+		}, function() {
+			this.updatePanesAttributes();
+
+			if (this.state.activeKey !== null) {
+				this.focusActiveTab();
+			}
+		});
+
+		if (this.props.onSelect) {
+			this.props.onSelect(key);
+		}
+	}
+								</code>
+							</pre>
+						</div>
+
+						<p>
+							Dans la méthode précédente, on trouve un appel à <code lang="en">focusActiveTab()</code>,
+							qui n'est pas encore définie. Cette méthode permet simplement de transporter le
+							focus sur le panneau actuellement ouvert. Elle utilise <code lang="en">activeTabIndex()</code>,
+							qui retourne l'index du panneau ouvert en cherchant celui qui possède un attribut
+							<code lang="en">aria-selected="true"</code>.
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+	focusActiveTab: function() {
+		var index = this.activeTabIndex();
+		this.tabs[index].focus();
+	}
+
+	activeTabIndex: function() {
+		for (var i = 0, l = this.tabs.length; i &lt; l; i++) {
+			if (this.tabs[i].getAttribute('aria-selected') === 'true') {
+				return i;
+			}
+		}
+
+		return 0;
+	}
+								</code>
+							</pre>
+						</div>
+
+						<p>
+							La méthode <code lang="en">handleFocus()</code> est appelée lorsqu'un événement
+							<code lang="en">focus</code> se produit dans la page. Si le focus vient de
+							l'extérieur du composant vers l'intérieur, on le transporte sur le titre
+							actif :
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+	handleFocus: function(event) {
+		if (!this.node.contains(this.focused) &amp;&amp; this.node.contains(event.target)) {
+			this.focusActiveTab();
+		}
+
+		this.focused = event.target;
+	}
+								</code>
+							</pre>
+						</div>
+
+						<p>
+							Il reste à traiter la navigation au clavier dans la méthode <code lang="en">handleKeyDown()</code>.
+							Les flèches <kbd title="haut">↑</kbd> et <kbd title="gauche">←</kbd> transportent
+							le focus sur le titre précédent, les flèches <kbd title="bas">↓</kbd> et <kbd title="droite">→</kbd>
+							sur le titre suivant. La touche <kbd>Espace</kbd> ouvre ou ferme
+							le panneau courant.
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+	handleKeyDown: function(event) {
+		// on ne traite l'événement que si on est sur un titre
+		if (event.target.getAttribute('role') !== 'tab') {
+			return;
+		}
+
+		switch (event.keyCode) {
+			case 37: // gauche
+			case 38: // haut
+				this.focusSiblingTab(-1);
+				break;
+
+			case 39: // droite
+			case 40: // bas
+				this.focusSiblingTab(1);
+				break;
+
+			case 32: // espace
+				event.target.click();
+				break;
+
+			default:
+				return;
+		}
+
+		event.preventDefault();
+	}
+								</code>
+							</pre>
+						</div>
+
+						<p>
+							On utilise au-dessus la méthode <code lang="en">focusSiblingTab()</code> qui
+							permet de donner le focus à un titre voisin du titre courant. Elle prend en
+							paramètre une direction : 1 pour sélectionner le suivant, -1 pour le précédent.
+							Cette méthode utilise <code lang="en">focusedTabIndex()</code>, qui retourne
+							le titre ayant actuellement le focus.
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+	focusSiblingTab: function(direction) {
+		var index = this.focusedTabIndex() + direction;
+
+		if (index &lt; 0) {
+			index = this.tabs.length - 1;
+		}
+
+		if (index &gt; this.tabs.length - 1) {
+			index = 0;
+		}
+
+		this.tabs[index].focus();
+	}
+
+	focusedTabIndex: function() {
+		for (var i = 0, l = this.tabs.length; i &lt; l; i++) {
+			if (this.tabs[i] === document.activeElement) {
+				return i;
+			}
+		}
+
+		return 0;
+	}
+								</code>
+							</pre>
+						</div>
+					</div>
+				</article>
+
+				<article id="tuto-modal">
+					<header>
+						<h2 lang="en">Modal</h2>
+					</header>
+
+					<div>
+						<h3>Démonstration</h3>
+
+						<div id="modal"></div>
+					</div>
+
+					<div>
+						<h3>Corrections</h3>
+
+						<p>Plusieurs améliorations sont nécessaires pour rendre ce composant accessible :</p>
+
+						<ul>
+							<li>
+								Le composant doit comporter un attribut <code lang="en">aria-labelledby</code>
+								ou <code lang="en">aria-label</code> afin que le titre de la modale soit
+								vocalisé lors de la prise de focus.
+							</li>
+							<li>
+								À l'ouverture, le focus doit être déplacé sur le premier élément
+								focusable de la modale.
+							</li>
+							<li>
+								Une fois ouverte, la tabulation doit être restreinte aux éléments
+								focusables de la modale pour éviter que l'utilisateur n'en sorte.
+							</li>
+							<li>
+								Lors de la fermeture de la modale, le focus doit être revenir sur l'élément
+								qui a déclenché l'ouverture de la modale, afin que l'utilisateur poursuive
+								la navigation.
+							</li>
+						</ul>
+
+						<p>
+							Pour rendre accessible ce composant, nous allons créer deux nouveaux
+							composants : l'un chargé de gérer le focus à l'intérieur d'un élément, et
+							l'autre de gérer une fenêtre modale.
+						</p>
+
+						<h4 lang="en">FocusTrap</h4>
+
+						<p>Ce composant est chargé de "piéger" le focus dans un composant donné.</p>
+						<p>
+							La méthode <code lang="en">render()</code> encapsule les enfants donnés entre
+							deux bornes, c'est-à-dire deux éléments tabulables qui déclenchent un
+							événement lorsqu'ils recoivent le focus.
+						</p>
+						<p>
+							De cette manière, si le premier élément reçoit le focus, il le transportera
+							au dernier, et inversement.
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+var FocusTrap = React.createClass({
+
+	render: function() {
+		return (
+			&lt;div&gt;
+				&lt;div onFocus={this.handleFocus} tabIndex="0" /&gt;
+
+				&lt;div ref="children"&gt;
+					{this.props.children}
+				&lt;/div&gt;
+
+				&lt;div onFocus={this.handleFocus} tabIndex="0" /&gt;
+			&lt;/div&gt;
+		);
+	}
+});
+								</code>
+							</pre>
+						</div>
+
+						<p>
+							À l'initialisation du composant, on enregistre son état initial et on
+							prépare la gestion du focus.
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+	componentDidMount: function() {
+		var children = React.findDOMNode(this.refs.children);
+
+		// on stocke si la touche Shift est enfoncée, ce qui sera utile pour
+		// déterminer le sens de déplacement lors d'une tabulation
+		this.shiftPressed = false;
+
+		// on enregistre un gestionnaire d'événements pour surveiller l'état
+		// de la touche Shift
+		document.addEventListener('keydown', this.handleKeyEvent);
+		document.addEventListener('keyup', this.handleKeyEvent);
+
+		// on enregistre l'élément qui a le focus au moment de l'affichage
+		this.previouslyFocused = document.activeElement;
+
+		// on stocke tous les éléments focusables à l'intérieur du composant
+		this.focusable = this.focusableElements(children);
+
+		// on donne le focus au premier élément focusable
+		this.focusable[0].focus();
+	}
+								</code>
+							</pre>
+						</div>
+
+						<p>
+							Lors de l'appui sur une touche, la méthode <code lang="en">handleKeyEvent()</code>
+							stocke l'état de la touche <kbd lang="en">Shift</kbd> :
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+	handleKeyEvent: function(event) {
+		this.shiftPressed = event.shiftKey;
+	}
+								</code>
+							</pre>
+						</div>
+
+						<p>
+							Lorsque le gestionnaire de focus est appelé (donc lorsque l'on tabule sur une
+							des "bornes" définies plus haut), suivant l'état de la touche <kbd lang="en">Shift</kbd>,
+							on donne le focus au premier ou au dernier élément tabulable.
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+	handleFocus: function(event) {
+		// si la touche Shift est enfoncée, cela signifie qu'on tabule en arrière
+		// on va donc donner le focus au dernier élément.
+		// sinon, on le donne au premier.
+		var index = this.shiftPressed
+			? this.focusable.length - 1
+			: 0;
+
+		this.focusable[index].focus();
+	}
+								</code>
+							</pre>
+						</div>
+
+						<p>
+							Lors du démontage du composant, on détache les gestionnaires d'événements
+							et on redonne le focus à l'élément qui a déclenché l'ouverture de la modale.
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+	componentWillUnmount: function() {
+		document.removeEventListener('keydown', this.handleKeyEvent);
+		document.removeEventListener('keyup', this.handleKeyEvent);
+
+		if (this.previouslyFocused) {
+			this.previouslyFocused.focus();
+		}
+	}
+								</code>
+							</pre>
+						</div>
+
+						<h4 lang="en">AccessibleModal</h4>
+
+						<p>
+							Ce composant wrappe le composant <code lang="en">Modal</code> proposé par
+							la bibliothèque afin de le rendre accessible.
+						</p>
+
+						<p>
+							La méthode <code lang="en">render()</code> passe les propriétés et les enfants
+							au composant original, en le wrappant dans un <code lang="en">FocusTrap</code>
+							afin que l'utilisateur ne puisse pas tabuler hors de la fenêtre.
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+var AccessibleModal = React.createClass({
+
+	render: function() {
+		return (
+			&lt;FocusTrap&gt;
+				&lt;Modal {...this.props}&gt;
+					{this.props.children}
+				&lt;/Modal&gt;
+			&lt;/FocusTrap&gt;
+		);
+	}
+});
+								</code>
+							</pre>
+						</div>
+
+						<p>
+							À l'initialisation du composant, on lie la modale à son titre par un
+							attribut <code lang="en">aria-labelledby</code>. De cette manière, le titre
+							sera vocalisé lors du focus sur la modale.
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+	componentDidMount: function() {
+		var node = React.findDOMNode(this);
+		var dialog = node.getElementsByClassName('modal-dialog')[0];
+		var title = dialog.getElementsByClassName('modal-title')[0];
+
+		dialog.setAttribute('aria-labelledby', 'modal-title');
+		title.setAttribute('id', 'modal-title');
+	}
+								</code>
+							</pre>
+						</div>
+					</div>
+				</article>
+
+				<article id="tuto-progress-bar">
+					<header>
+						<h2 lang="en">Progress bar</h2>
+					</header>
+
+					<div>
+						<h3>Démonstration</h3>
+
+						<div id="progress-bar"></div>
+
+						<div id="progress-bar-target">
+							<p>Région mise à jour.</p>
+						</div>
+					</div>
+
+					<div>
+						<h3>Corrections</h3>
+
+						<p>Plusieurs améliorations sont nécessaires pour rendre ce composant accessible :</p>
+
+						<ul>
+							<li>
+								La <span lang="en">progress bar</span> doit posséder un attribut
+								<code lang="en">title</code> ou <code lang="en">aria-labelledby</code>
+								faisant office de nom
+							</li>
+							<li>
+								Un attribut <code lang="en">aria-valuetext</code> doit indiquer la valeur
+								courante sous une forme lisible
+							</li>
+						</ul>
+
+						<p>Si la <span lang="en">progress bar</span> met à jour une zone de l'interface :</p>
+
+						<ul>
+							<li>
+								Cette zone doit comporter un attribut <code lang="en">aria-describedby="id-de-la-progress-bar"</code>
+								qui la lie à la <span lang="en">progress bar</span>.
+							</li>
+							<li>
+								Lorsqu'une mise à jour est en cours, la zone doit comporter un attribut
+								<code lang="en">aria-busy="true"</code>, indiquant que son contenu est
+								en cours de mise à jour.
+							</li>
+						</ul>
+
+						<p>
+							La méthode <code lang="en">render()</code> se contente de retourner une
+							<code lang="en">ProgressBar</code>, en lui passant les propriétés nécéssaires :
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+var LabelledProgressBar = React.createClass({
+
+	render: function() {
+		return &lt;ProgressBar {...this.props} ref="progress" /&gt;;
+	}
+});
+								</code>
+							</pre>
+						</div>
+
+						<p>
+							Pour mettre à jour la propriété <code lang="en">aria-valuetext</code>,
+							le plus simple est de récupérer la valeur déjà calculée par le composant original.
+							Ce texte n'étant pas accessible par <span lang="en">JavaScript</span>, on le récupère directement
+							dans le DOM :
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+	updateTexts: function() {
+		// on récupère les enfants de la progress bar
+		var node = React.findDOMNode(this.refs.progress);
+		var children = node.childNodes;
+
+		// on met à jour le texte de chacun des enfants
+		for (var i = 0, l = children.length; i &lt; l; i++) {
+			this.updateText(children[i]);
+		}
+	},
+
+	updateText: function(node) {
+		node.setAttribute('aria-valuetext', node.textContent);
+	}
+								</code>
+							</pre>
+						</div>
+
+						<p>Finalement, on s'assure que le texte est mis à jour lors de chaque rendu du composant :</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+	componentDidMount: function() {
+		this.updateTexts();
+	},
+
+	componentDidUpdate: function() {
+		this.updateTexts();
+	}
+								</code>
+							</pre>
+						</div>
+
+						<p>
+							Dans le cas ou la <span lang="en">progress bar</span> met à jour une zone
+							de l'interface, il est nécessaire de renseigner plusieurs informations pour
+							les lier ensemble.
+						</p>
+						<p>
+							Si une zone à mettre à jour (un élément du DOM) est passée en propriété,
+							on lui ajoute un attribut <code lang="en">aria-describedby</code> référencant
+							la <span lang="en">progress bar</span>. On effectue cet ajout à l'initialisation
+							du composant.
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+	setupTarget: function() {
+		if (this.props.target) {
+			this.props.target.setAttribute(
+				'aria-describedby',
+				this.props.id
+			);
+		}
+	},
+
+	componentDidMount: function() {
+		// ...
+		this.setupTarget();
+	}
+								</code>
+							</pre>
+						</div>
+
+						<p>
+							Lorsque la <span lang="en">progress bar</span> est en cours de mise à jour,
+							on ajoute à la zone un attribut <code lang="en">aria-busy="true"</code>
+							indiquant qu'une mise à jour du contenu est en cours. On met à jour cet
+							attribut à l'initialisation ainsi qu'à chaque rendu du composant.
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+	updateTarget: function() {
+		if (!this.props.target) {
+			return;
+		}
+
+		var min = this.props.min || 0;
+		var max = this.props.max || 100;
+
+		// on considère qu'une mise à jour est en cours si la
+		// valeur courant est entre le minimum et le maximum
+		var busy = (this.props.now &gt; min) &amp;&amp; (this.props.now &lt; max);
+
+		this.props.target.setAttribute('aria-busy', busy);
+	},
+
+	componentDidMount: function() {
+		// ...
+		this.updateTarget();
+	},
+
+	componentDidUpdate: function() {
+		// ...
+		this.updateTarget();
+	}
+								</code>
+							</pre>
+						</div>
+					</div>
+				</article>
+
+				<article id="tuto-tabs">
+					<header>
+						<h2 lang="en">Tabs</h2>
+					</header>
+
+					<div>
+						<h3>Démonstration</h3>
+
+						<div id="tabs"></div>
+
+						<p class="alert alert-warning">
+							Il se peut qu'en naviguant rapidement au clavier entre les onglets, les panneaux
+							finissent par disparaître.
+							C'est un bug de la bibliothèque originale qui n'est pas lié aux corrections apportées.
+							<a href="https://github.com/react-bootstrap/react-bootstrap/issues/557">Un ticket a été ouvert à ce sujet</a>
+							sur le dépôt officiel du projet.
+						</p>
+					</div>
+
+					<div>
+						<h3>Corrections</h3>
+
+						<p>Plusieurs améliorations sont nécessaires pour rendre ce composant accessible :</p>
+
+						<ul>
+							<li>La liste d'onglets doit posséder un attribut <code lang="en">role="tablist"</code></li>
+							<li>Chaque onglet doit posséder un attribut <code lang="en">role="tab"</code></li>
+							<li>
+								Chaque onglet actif doit posséder un attribut <code lang="en">aria-selected="true"</code>
+								(ou <code lang="en">"false"</code> s'il est inactif) pour préciser son état.
+							</li>
+							<li>
+								Chaque onglet doit posséder un attribut <code lang="en">aria-controls="id-du-panneau"</code>
+								qui le lie au panneau qu'il contrôle.
+							</li>
+							<li>Chaque panneau doit posséder un attribut <code>role="tabpanel"</code></li>
+							<li>
+								Chaque panneau doit posséder un attribut <code lang="en">aria-labelledby="id-de-l-onglet"</code>
+								qui le lie à l'onglet qui le contrôle.
+							</li>
+							<li>
+								Depuis un onglet, les touches <kbd title="haut">↑</kbd> et <kbd title="gauche">←</kbd>
+								doivent permettre d'atteindre l'onglet précédent.
+							</li>
+							<li>
+								Depuis un onglet, les touches <kbd title="bas">↓</kbd> et <kbd title="droite">→</kbd>
+								doivent permettre d'atteindre l'onglet suivant.
+							</li>
+						</ul>
+
+						<p>
+							La méthode <code lang="en">render()</code> retourne un <code lang="en">TabbedArea</code>
+							configuré avec la clé du panneau actif et un gestionnaire d'événement qui
+							sera appelé à chaque sélection de panneau. On le référence également sous le nom
+							"area", afin de pouvoir y accéder dans les autres méthodes par <code lang="en">this.refs.area</code>.
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+var AccessibleTabbedArea = React.createClass({
+
+	render: function() {
+		return (
+			&lt;TabbedArea
+				ref="area"
+				activeKey={this.state.activeKey}
+				onSelect={this.handleSelect}
+			&gt;
+				{this.props.children}
+			&lt;/TabbedArea&gt;
+		);
+	}
+});
+								</code>
+							</pre>
+						</div>
+
+						<p>
+							Il faut donc initialiser la variable d'état <code lang="en">activeKey</code>.
+							Comme dans le composant original, sa valeur est donnée par la propriété
+							<code lang="en">defaultActiveKey</code>.
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+	getInitialState: function() {
+		return {
+			activeKey: this.props.defaultActiveKey || null
+		};
+	}
+								</code>
+							</pre>
+						</div>
+
+						<p>
+							À l'initialisation du composant, on récupère les onglets et les panneaux.
+							On ajoute aussi un gestionnaire d'événements pour gérer la navigation au clavier.
+							On appelle finalement la méthode <code lang="en">setup()</code>, chargée de mettre en
+							place les attributs requis, puis on met à jour les attributs de l'onglet actif.
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+	componentDidMount: function() {
+		this.tabList = React.findDOMNode(this.refs.area.refs.tabs);
+		this.tabs = this.tabList.getElementsByTagName('a');
+
+		this.paneList = React.findDOMNode(this.refs.area.refs.panes);
+		this.panes = this.paneList.children;
+
+		this.tabList.addEventListener('keydown', this.handleKeyDown);
+
+		this.setupAttributes();
+		this.updateAttributes();
+	},
+
+	componentWillUnmount: function() {
+		this.tabList.removeEventListener('keydown', this.handleKeyDown);
+	}
+								</code>
+							</pre>
+						</div>
+
+						<p>
+							La méthode <code lang="en">setup()</code> initialise les attributs permettant
+							de lier les titres et les panneaux, et de préciser leur état.
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+	setupAttributes: function() {
+		this.tabList.setAttribute('role', 'tablist');
+
+		for (var i = 0, l = this.panes.length; i &lt; l; i++) {
+			var tab = this.tabs[i];
+			var pane = this.panes[i];
+			var id = pane.getAttribute('id');
+
+			if (!id) {
+				id = 'pane-' + i;
+				pane.setAttribute('id', id);
+			}
+
+			tab.setAttribute('aria-controls', id);
+			tab.setAttribute('role', 'tab');
+			pane.setAttribute('role', 'tabpanel');
+		}
+	}
+								</code>
+							</pre>
+						</div>
+
+						<p>
+							La méthode <code lang="en">updateAttributes()</code> met à jour les attributs
+							de tous les onglets, mais active seulement celui demandé. Seul cet onglet
+							sera tabulable, et son attribut <code lang="en">aria-selected</code> aura
+							pour valeur<code lang="en">"true"</code>.
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+	updateAttributes: function() {
+		var ref = 'tab' + this.state.activeKey;
+		var active = React.findDOMNode(this.refs.area.refs[ref].refs.anchor);
+
+		for (var i = 0, l = this.tabs.length; i &lt; l; i++) {
+			var tab = this.tabs[i];
+			var isActive = (tab === active);
+
+			tab.setAttribute('tabindex', isActive ? 0 : -1)
+			tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+		}
+	}
+								</code>
+							</pre>
+						</div>
+
+						<p>
+							La méthode <code lang="en">handleSelect()</code> permet d'ouvrir ou de
+							refermer un panneau. Une fois l'état modifié, les attributs sont mis à jour
+							et le focus est donné au panneau ouvert. Finalement, on transmet l'événement
+							si nécessaire.
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+	handleSelect: function(key) {
+		this.setState({
+			activeKey: key
+		}, function() {
+			this.updateAttributes();
+			this.focusActiveTab();
+		});
+
+		if (this.props.onSelect) {
+			this.props.onSelect(key);
+		}
+	}
+								</code>
+							</pre>
+						</div>
+
+						<p>
+							Dans la méthode précédente, on trouve un appel à la méthode
+							<code lang="en">focusActiveTab()</code>, qui n'est pas encore définie.
+							Cette méthode permet simplement de transporter le focus sur le panneau
+							actuellement ouvert.
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+	focusActiveTab: function() {
+		var ref = 'tab' + this.state.activeKey;
+		var active = React.findDOMNode(this.refs.area.refs[ref].refs.anchor);
+
+		active.focus();
+	}
+								</code>
+							</pre>
+						</div>
+
+						<p>
+							Il reste à traiter la navigation au clavier dans la méthode <code lang="en">handleKeyDown()</code>.
+							Les flèches <kbd title="haut">↑</kbd> et <kbd title="gauche">←</kbd> activent
+							l'onglet précédent, les flèches <kbd title="bas">↓</kbd> et <kbd title="droite">→</kbd>
+							l'onglet suivant.
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+	handleKeyDown: function(event) {
+		var ref = 'tab' + this.refs.area.getActiveKey();
+		var node = React.findDOMNode(this.refs.area.refs[ref]);
+		var next;
+
+		switch (event.keyCode) {
+			case 37: // gauche
+			case 38: // haut
+				next = node.previousElementSibling || node.parentElement.lastChild;
+				break;
+
+			case 39: // droite
+			case 40: // bas
+				next = node.nextElementSibling || node.parentElement.firstChild;
+				break;
+
+			default:
+				return;
+		}
+
+		event.preventDefault();
+		next.firstElementChild.click();
+	}
+								</code>
+							</pre>
+						</div>
+					</div>
+				</article>
+
+				<article id="tuto-tooltip">
+					<header>
+						<h2 lang="en">Tooltip</h2>
+					</header>
+
+					<div>
+						<h3>Démonstration</h3>
+
+						<div id="tooltip"></div>
+					</div>
+
+					<div>
+						<h3>Corrections</h3>
+
+						<p>Plusieurs améliorations sont nécessaires pour rendre ce composant accessible :</p>
+
+						<ul>
+							<li>Le tooltip doit posséder un attribut <code lang="en">role="tooltip"</code></li>
+							<li>Le texte doit être lié au tooltip par un attribut <code lang="en">aria-describedby</code></li>
+							<li>Le tooltip doit pouvoir être caché lors de l'appui sur <kbd>Echap</kbd></li>
+						</ul>
+
+						<p>
+							Pour ajouter ces différentes fonctionnalités, la méthode retenue consiste
+							à encapsuler le composant <code lang="en">OverlayTrigger</code>.
+							Cela permet d'utiliser le <span lang="en">wrapper</span> de la même manière que <code lang="en">OverlayTrigger</code>,
+							tout en profitant des améliorations d'accessibilité.
+						</p>
+
+						<p>
+							Nous pouvons d'abord implémenter la méthode <code lang="en">render()</code>, chargée
+							de rendre un <code lang="en">OverlayTrigger</code> :
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+var TooltipOverlayTrigger = React.createClass({
+
+	render: function() {
+		// on génère un id pour lier le contenu au tooltip
+		// (l'implémentation de cette fonction n'est pas importante pour l'exemple)
+		var id = generateUniqueId();
+
+		// on rend les différents composants
+		var child = this.renderChild(id);
+		var tooltip = this.renderTooltip(id);
+
+		// on rend le composant wrappé en lui passant les propriétés,
+		// le contenu et le tooltip
+		return (
+			&lt;OverlayTrigger {...this.props} ref="trigger" overlay={tooltip}&gt;
+				{child}
+			&lt;/OverlayTrigger&gt;
+		);
+	}
+});
+								</code>
+							</pre>
+						</div>
+
+						<p>
+							Nous pouvons maintenant compléter les méthodes de rendu des composants,
+							la plus simple étant <code lang="en">renderTooltip()</code>, qui retourne
+							le tooltip passé en propriété en lui ajoutant un <code lang="en">id</code>
+							et un <code lang="en">role</code> adapté :
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+	renderTooltip: function(id) {
+		return React.cloneElement(this.props.overlay, {
+			id: id,
+			role: 'tooltip'
+		});
+	}
+								</code>
+							</pre>
+						</div>
+
+						<p>
+							La méthode <code lang="en">renderChild()</code> est très similaire. Elle retourne le <span lang="en">tooltip</span>
+							passé en propriété en lui ajoutant un attribut <code lang="en">aria-describedby</code>
+							qui le lie au contenu, et un gestionnaire d'événements pour gérer la touche <kbd>Echap</kbd> :
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+	renderChild: function(tooltipId) {
+		var child = React.Children.only(this.props.children);
+
+		return React.cloneElement(child, {
+			'aria-describedby': tooltipId,
+			'onKeyDown': this.handleKeyDown
+		});
+	}
+								</code>
+							</pre>
+						</div>
+
+						<p>
+							Finalement, il reste à implémenter le gestionnaire d'événements attaché
+							au composant enfant. Si l'utilisateur appuie sur <kbd>Echap</kbd>, on clôt
+							la modale. Pour ne pas casser la chaîne des événements, on appelle le
+							<span lang="en">callback</span> <code lang="en">onKeyDown</code> s'il
+							est défini.
+						</p>
+
+						<div class="highlight-doc">
+							<pre>
+								<code class="js" data-lang="js" lang="en">
+	handleKeyDown: function(event) {
+		if (event.keyCode === 27) {
+			this.refs.trigger.handleDelayedHide();
+		}
+
+		if (this.props.onKeyDown) {
+			this.props.onKeyDown(event);
+		}
+	}
+								</code>
+							</pre>
+						</div>
+					</div>
+				</article>
+
+				<article>
+					<header>
+						<h2>Avis du développeur</h2>
+					</header>
+
+					<blockquote>
+						<p>
+							Les composants <span lang="en">React</span> sont très "fermés", du fait
+							qu'ils ne permettent leur configuration que par des propriétés. Il peut
+							devenir compliqué d'enrichir un composant sans le réécrire si son auteur
+							ne prévoit pas de moyen de configurer certains comportements, ou trop peu
+							d'événements auquels souscrire lors de changements d'état.
+						</p>
+						<p>
+							Il reste possible de modifier tout type de composant, mais cela peut s'avérer
+							complexe, et relativement verbeux par rapport à un code pensé pour
+							<span lang="en">React</span> depuis le début. Avant de choisir un composant,
+							il est donc judicieux d'évaluer les options de configuration possibles
+							(modification des attributs DOM, des classes CSS), pour faciliter son
+							intégration dans un contexte particulier.
+						</p>
+						<p>
+							<a href="scripts/react-bootstrap.js" download>
+								Télécharger la correction des composants <span lang="en">React Bootstrap</span>
+								au format JavaScript (16,1Ko)
+							</a>
+						</p>
+					</blockquote>
+				</article>
+			</section>
+		</main>
+
+		<footer role="contentinfo" class="navbar navbar-default navbar-static-bottom small">
+			<div class="container">
+				<h2>
+					Droits de reproduction
+					<small>Ce document est placé sous <a href="http://wiki.data.gouv.fr/wiki/Licence_Ouverte_/_Open_Licence">licence ouverte 1.0 ou ultérieure</a></small>
+				</h2>
+				<div class="row">
+					<div class="col-md-1">
+						<img src="../modernisation-logo.jpg" alt="Secrétariat général pour la modernisation de l'action publique" class="navbar-left">
+					</div>
+					<div class="col-md-5">
+						<p class="clear">Vous êtes libres de :</p>
+						<ul>
+							<li>Reproduire, copier, publier et transmettre ces informations ;</li>
+							<li>Diffuser et redistribuer ces informations ;</li>
+							<li>Adapter, modifier, extraire et transformer ces informations, notamment pour créer des informations dérivées ;</li>
+							<li>Exploiter ces informations à titre commercial, par exemple en la combinant avec d'autres informations, ou en l'incluant dans votre propre produit ou application.</li>
+						</ul>
+					</div>
+					<div class="col-md-6">
+						<p>Ces libertés s'appliquent sous réserve de mentionner la paternité de l'information d'origine : sa source et la date de sa dernière mise à jour. Le réutilisateur peut notamment s'acquitter de cette condition en indiquant un ou des liens hypertextes (URL) renvoyant vers le présent site et assurant une mention effective de sa paternité.</p><p>Cette mention de paternité ne doit ni conférer un caractère officiel à la réutilisation de ces informations, ni suggérer une quelconque reconnaissance ou caution par le producteur de l'information, ou par toute autre entité publique, du réutilisateur ou de sa réutilisation.</p>
+					</div>
+				</div>
+			</div>
+		</footer>
+
+		<script src="../bower_components/jquery/dist/jquery.js"></script>
+		<script src="../bower_components/highlightjs/highlight.pack.js"></script>
+
+		<script>hljs.initHighlightingOnLoad();</script>
+
+		<script src="../bower_components/react/react.js"></script>
+		<script src="../bower_components/react/JSXTransformer.js"></script>
+		<script src="../bower_components/react-bootstrap/react-bootstrap.js"></script>
+
+		<script src="scripts/react-bootstrap.js" type="text/jsx"></script>
+
+		<script type="text/jsx">
+			/**
+			 *	Accordion
+			 */
+			var Panel = ReactBootstrap.Panel;
+
+			var accordion = (
+				<AccessibleAccordion>
+					<Panel header="Titre 1" eventKey="1">
+						<p>
+							Anim pariatur cliche reprehenderit, enim eiusmod high life
+							accusamus terry richardson ad squid. 3 wolf moon officia
+							aute, non cupidatat skateboard dolor brunch. Food truck
+							quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor,
+							sunt aliqua put a bird on it squid single-origin coffee
+							nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica,
+							craft beer labore wes anderson cred nesciunt sapiente ea
+							proident. Ad vegan excepteur butcher vice lomo. Leggings
+							occaecat craft beer farm-to-table, raw denim aesthetic
+							synth nesciunt you probably haven't heard of them accusamus
+							labore sustainable VHS.
+						</p>
+					</Panel>
+
+					<Panel header="Titre 2" eventKey="2">
+						<p>
+							Anim pariatur cliche reprehenderit, enim eiusmod high life
+							accusamus terry richardson ad squid. 3 wolf moon officia
+							aute, non cupidatat skateboard dolor brunch. Food truck
+							quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor,
+							sunt aliqua put a bird on it squid single-origin coffee
+							nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica,
+							craft beer labore wes anderson cred nesciunt sapiente ea
+							proident. Ad vegan excepteur butcher vice lomo. Leggings
+							occaecat craft beer farm-to-table, raw denim aesthetic
+							synth nesciunt you probably haven't heard of them accusamus
+							labore sustainable VHS.
+						</p>
+						<p><a href="#">Un lien</a>.</p>
+					</Panel>
+
+					<Panel header="Titre 3" eventKey="3">
+						<p>
+							Anim pariatur cliche reprehenderit, enim eiusmod high life
+							accusamus terry richardson ad squid. 3 wolf moon officia
+							aute, non cupidatat skateboard dolor brunch. Food truck
+							quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor,
+							sunt aliqua put a bird on it squid single-origin coffee
+							nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica,
+							craft beer labore wes anderson cred nesciunt sapiente ea
+							proident. Ad vegan excepteur butcher vice lomo. Leggings
+							occaecat craft beer farm-to-table, raw denim aesthetic
+							synth nesciunt you probably haven't heard of them accusamus
+							labore sustainable VHS.
+						</p>
+					</Panel>
+				</AccessibleAccordion>
+			);
+
+			React.render(accordion, document.getElementById('accordion'));
+
+			/**
+			 *	Modal.
+			 */
+			var Button = ReactBootstrap.Button;
+
+			var overlay = function(close) {
+				return (
+					<AccessibleModal bsStyle="primary" title="Titre de la fenêtre" onRequestHide={close}>
+						<div className="modal-body">
+							<p>Contenu de la modale.</p>
+							<p><a href="#">Un lien</a>.</p>
+						</div>
+
+						<div className="modal-footer">
+							<Button onClick={close}>Fermer</Button>
+						</div>
+					</AccessibleModal>
+				);
+			}
+
+			React.render(
+				<ModalContainer overlay={overlay} />,
+				document.getElementById('modal')
+			);
+
+			/**
+			 *	Progress bar.
+			 */
+			var target = document.getElementById('progress-bar-target');
+
+			var progressBar = (
+				<ProgressBarContainer>
+					<LabelledProgressBar
+						label="%(percent)s%"
+						title="Exemple de progress bar"
+						target={target}
+					/>
+				</ProgressBarContainer>
+			);
+
+			React.render(progressBar, document.getElementById('progress-bar'));
+
+			/**
+			 *	Tabs.
+			 */
+			var TabPane = ReactBootstrap.TabPane;
+
+			var tabs = (
+				<AccessibleTabbedArea defaultActiveKey={2}>
+					<TabPane eventKey={1} tab="Tab 1">Contenu sans éléments focusables.</TabPane>
+					<TabPane eventKey={2} tab="Tab 2">Contenu avec <a href="#">un élément focusable</a>.</TabPane>
+				</AccessibleTabbedArea>
+			);
+
+			React.render(tabs, document.getElementById('tabs'));
+
+			/**
+			 *	Tooltip.
+			 */
+			var ButtonToolbar = ReactBootstrap.ButtonToolbar;
+			var Tooltip = ReactBootstrap.Tooltip;
+			var Button = ReactBootstrap.Button;
+
+			var buttons = (
+				<ButtonToolbar>
+					<TooltipOverlayTrigger placement="left" overlay={<Tooltip>Informations complémentaires</Tooltip>}>
+						<Button bsStyle="default">À gauche</Button>
+					</TooltipOverlayTrigger>
+					<TooltipOverlayTrigger placement="top" overlay={<Tooltip>Informations complémentaires</Tooltip>}>
+						<Button bsStyle="default">En haut</Button>
+					</TooltipOverlayTrigger>
+					<TooltipOverlayTrigger placement="bottom" overlay={<Tooltip>Informations complémentaires</Tooltip>}>
+						<Button bsStyle="default">En bas</Button>
+					</TooltipOverlayTrigger>
+					<TooltipOverlayTrigger placement="right" overlay={<Tooltip>Informations complémentaires</Tooltip>}>
+						<Button bsStyle="default">À droite</Button>
+					</TooltipOverlayTrigger>
+				</ButtonToolbar>
+			);
+
+			React.render(buttons, document.getElementById('tooltip'));
+		</script>
+	</body>
+</html>

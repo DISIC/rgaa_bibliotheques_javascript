@@ -1,0 +1,1768 @@
+<!doctype html>
+<html lang="fr">
+<head>
+	<meta charset="utf-8">
+	<title>Tutoriels -  SGMAP</title>
+	<link href="../bower_components/bootstrap/dist/css/bootstrap.css" rel="stylesheet">
+	<link href="../bower_components/bootstrapaccessibilityplugin/bs3.1.1/css/docs.min.css" rel="stylesheet">
+	<link href="../bower_components/jquery-ui/themes/base/all.css" rel="stylesheet" />
+	<link href="../bower_components/highlightjs/styles/monokai_sublime.css" rel="stylesheet"/>
+	<style type="text/css">
+		*:focus {
+			outline: 1px solid red !important;
+			border: 1px solid red !important;
+		}
+		pre{
+			background: #23241F;
+		}
+		.bs-example pre{
+			background: #f5f5f5;
+		}
+		.bs-example:after{
+			content: "Exemple";
+		}
+	</style>
+</head>
+<body>
+	<header class="navbar navbar-inverse navbar-static-top" role="banner">
+		<div class="container">
+			<div class="navbar-header">
+				<a href="index.html" class="navbar-brand">SGMAP</a>
+			</div>
+			<nav class="collapse navbar-collapse bs-navbar-collapse">
+				<ul class="nav navbar-nav">
+					<li>
+						<a href="index.html">Tutoriel</a>
+					</li>
+					<li>
+						<a href="jquery-ui.html">Jquery-ui</a>
+					</li>
+					<li class="active">
+						<a href="angular-ui.html">Angular-ui</a>
+					</li>
+					<li>
+						<a href="react-bootstrap.html">React Bootstrap</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</header>
+	<main role="main" class="container" ng-app="ui.bootstrap.demo">
+		<section>
+			<header>
+				<h1>Angular-ui <small>Tutoriel composants d’interface JavaScript</small></h1>
+				<p lang="en" class="lead">Angular UI Bootstrap V0.12.1 + AngularJs v1.2.28</p>
+			</header>
+
+			<ul class="list-inline" id="overview">
+				<li lang="en"><a href="#slider_link">Slider</a></li>
+				<li lang="en"><a href="#progressbar_link">Progressbar</a></li>
+				<li lang="en"><a href="#dialog_link">Dialog</a></li>
+				<li lang="en"><a href="#tabpanel_link">Tabpanel</a></li>
+				<li lang="en"><a href="#tooltip_link">Tooltip</a></li>
+				<li lang="en"><a href="#accordion_link">Accordion</a></li>
+				<li lang="en"><a href="#radiobutton_link">Radiobutton</a></li>
+				<li lang="en"><a href="#checkbox_link">Checkbox</a></li>
+				<li lang="en"><a href="#datepicker_link">Datepicker</a></li>
+			</ul>
+
+			<article>
+				<header>
+					<h2>Méthodologie</h2>
+				</header>
+				<p>
+					AngularJS permet d'étendre le vocabulaire <abbr title="Hypertext Markup Language">HTML</abbr> et de créer des composants réutilisables.
+				</p>
+				<p>
+					Comment rendre une bibliothèque AngularJS accessible? <a href="https://angular-ui.github.io/bootstrap" lang="en" title="Angular Bootstrap - Nouvelle fenêtre">Angular Bootstrap</a>
+					offre un large panel de composants pouvant être testés suivant la grille <abbr title="Web Accessibility Initiative - Accessible Rich Internet Applications" lang="en">WAI-ARIA</abbr>. Cette bibliothèque est un très
+					bon support pour illustrer notre exemple. Premièrement vous pouvez créer un module AngularJS qui étendra le module d'origine.
+				</p>
+				<pre>
+					<code class="js" lang="en">var a11yBootstrapModule = angular.module('a11yBootstrap', ['ui.bootstrap']);</code>
+				</pre>
+				<p>
+					Ici, vous pouvez injecter le module ui.bootstrap dans votre nouveau module. De cette façon, toutes les
+					modifications dans a11yBootstrap n'interfèrent pas avec le module d'origine. Ce module va être enrichi
+					par les corrections d'accessibilité.
+				</p>
+				<p>
+					Dans AngularJS toute manipulation de <abbr title="Document Object Model" lang="en">DOM</abbr> doit passer par une directive. Voici un exemple de directive,
+					nommée <code>maDirective</code>. Il est possible d'appeler sa directive avec le même nom que la bibliothèque
+					<span lang="en">Angular Bootstrap</span> sans écraser celle d'origine, ce qui peut être pratique pour les
+					corrections d'accessibilité. On peut, de plus, jouer sur 2 paramètres pour intervenir dans le <span lang="en">DOM</span> avant ou
+					après la directive d'origine. On peut augmenter le paramètre <code lang="en">priority</code> pour intervenir
+					avant la directive d'origine. Il est aussi possible d'utiliser le service <code lang="en">$timeout</code>
+					pour être sûr d'intervenir en dernier sur <span lang="en">DOM</span>, ici avec la fonction <code lang="en">after</code>.
+				</p>
+				<pre>
+					<code class="js" lang="en">
+a11yBootstrapModule.directive('maDirective', ['$timeout', function($timeout){
+  return {
+    // priority: 10,
+    link: function($scope, iElm, iAttrs, controller) {
+      function after() {
+        //Code exécuté après
+      }
+      $timeout(after);
+
+    }
+  };
+}]);
+					</code>
+				</pre>
+
+				<p>
+					C'est dans la directive que nous allons manipuler le <span lang="en">DOM</span> et ajouter les gestionnaires d'évènements.
+					De manière générale, chaque gestionnaire d'événements ajouté au document ou en dehors du composant de la directive sera
+					retiré à la destruction du <span lang="en">DOM</span>. Il faut pour cela attendre l'évènement <code lang="en">$destroy</code>.
+				</p>
+
+				<pre>
+					<code class="js" lang="en">
+a11yBootstrapModule.directive('maDirective', ['$document', function($document){
+  return {
+    // priority: 10,
+    link: function($scope, iElm, iAttrs, controller) {
+
+      function escapeKeyBind () {
+      }
+
+      //Add escapeKeyBind
+      $document.bind('keydown', escapeKeyBind);
+
+      //on $destroy event
+      $scope.$on('$destroy', function() {
+        //remove escapeKeyBind
+        $document.unbind('keydown', escapeKeyBind);
+      });
+
+
+    }
+  };
+}]);
+					</code>
+				</pre>
+
+				<p>
+					Une partie des corrections se fera directement dans les <span lang="en">templates</span>.
+				</p>
+			</article>
+
+			<article>
+				<header>
+					<h2 id="slider_link" tabindex="-1" lang="en">Slider</h2>
+				</header>
+				<h3>Démonstration</h3>
+
+				<div class="bs-example" ng-controller="RatingDemoCtrl">
+					<h4 id="titre-slider">Exemple de composant AngularJS</h4>
+					<rating aria-labelledby="titre-slider" title="exemple de composant AngularJS" ng-model="rate" max="max" readonly="isReadonly" on-hover="hoveringOver(value)" on-leave="overStar = null"></rating>
+					<script type="text/ng-template" id="template/rating/rating.html">
+						<span ng-mouseleave="reset()" ng-keydown="onKeydown($event)" tabindex="0" role="slider" aria-valuemin="0" aria-valuemax="{{range.length}}" aria-valuetext="{{value}} étoile{{ value > 1 ? 's' : '' }}" aria-valuenow="{{value}}">
+							<i ng-repeat="r in range track by $index" ng-mouseenter="enter($index + 1)" ng-click="rate($index + 1)" class="glyphicon" ng-class="$index < value && (r.stateOn || 'glyphicon-star') || (r.stateOff || 'glyphicon-star-empty')">
+								<span class="sr-only">({{ $index < value ? '*' : ' ' }})</span>
+							</i>
+						</span>
+					</script>
+					<span class="label" ng-class="{'label-warning': percent<30, 'label-info': percent>=30 && percent<70, 'label-success': percent>=70}" ng-show="overStar && !isReadonly">{{percent}}%</span>
+
+					<pre style="margin:15px 0;">Valeur: <b>{{rate}}</b> - Lecture seule: <i>{{isReadonly}}</i> - Valeur au survol: <b>{{overStar || "none"}}</b></pre>
+
+					<button type="button" class="btn btn-sm btn-danger" ng-click="rate = 0" ng-disabled="isReadonly">Remettre à zéro</button>
+					<button type="button" class="btn btn-sm btn-default" ng-click="isReadonly = ! isReadonly">Activer la lecture seule</button>
+				</div>
+
+				<p>Pour ce composant, les erreurs relevées sont :</p>
+				<ul>
+					<li>l’absence de titre du composant, aucun titre ne doit être vocalisé lors de la prise de focus sur le composant ;</li>
+					<li>l’absence de valeur enrichie, si nécessaire, qui sera verbalisée à la place de la valeur courante du <span lang="en">slider</span> et qui peut être composée de la valeur courante et d'un texte en suffixe ;</li>
+				</ul>
+
+				<h3>Corrections</h3>
+				<ul>
+					<li>Lors de la définition du composant, il faut ajouter un attribut <code lang="en">title=""</code> ou <code lang="en">aria-labelledby="[ID]"</code>, [ID] faisant référence à un identifiant de la page;</li>
+				</ul>
+				<div class="highlight-doc">
+					<pre><code class="html" lang="en">&lt;h4 id=&quot;titre-slider&quot;&gt;Exemple de composant AngularJS&lt;/h4&gt;
+&lt;rating aria-labelledby=&quot;titre-slider&quot; ng-model=&quot;rate&quot; max=&quot;max&quot; readonly=&quot;isReadonly&quot; on-hover=&quot;hoveringOver(value)&quot; on-leave=&quot;overStar = null&quot;&gt;&lt;/rating&gt;</code></pre>
+				</div>
+			</article>
+
+			<article>
+				<header>
+					<h2 id="dialog_link" tabindex="-1" lang="en">Modal</h2>
+				</header>
+
+				<div>
+					<h3>Démonstration</h3>
+
+					<div class="bs-example" ng-controller="ModalDemoCtrl">
+
+						<button type="button" class="btn btn-default" ng-click="open()">Ouvrez-moi !</button>
+						<button type="button" class="btn btn-default" ng-click="open('lg')">Grande modale</button>
+						<button type="button" class="btn btn-default" ng-click="open('sm')">Petite modale</button>
+						<div ng-show="selected">Selection from a modal: {{ selected }}</div>
+						<script type="text/ng-template" id="myModalContent.html">
+							<div class="modal-header">
+								<h3 id="titre-modal" class="modal-title">Une modale</h3>
+							</div>
+							<div class="modal-body">
+								<div ng-repeat="item in items">
+									<button type="button" class="btn btn-default" ng-click="selected.item = item">{{ item }}</button>
+								</div>
+								Sélection: <b>{{ selected.item }}</b>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-primary" ng-click="ok()">OK</button>
+								<button type="button" class="btn btn-warning" ng-click="cancel()">Annuler</button>
+							</div>
+						</script>
+					</div>
+				</div>
+
+				<h3>Corrections</h3>
+
+				<p>Plusieurs améliorations sont nécessaires pour rendre ce composant accessible :</p>
+
+				<ul>
+					<li>
+						Le composant doit comporter un attribut <code lang="en">aria-labelledby</code>
+						ou <code lang="en">aria-label</code> afin que le titre de la modale soit
+						vocalisé lors de la prise de focus.
+					</li>
+					<li>
+						Une fois la modale ouverte, la tabulation doit être restreinte aux éléments
+						focusables de la modale pour éviter que l'utilisateur n'en sorte.
+					</li>
+					<li>
+						Lors de la fermeture de la modale, le focus doit être déplacé sur l'élément
+						qui a déclenché son ouverture, afin que l'utilisateur poursuive
+						la navigation.
+					</li>
+				</ul>
+
+				<p>
+					Pour rendre accessible ce composant, nous allons créer une directive
+					chargé de gérer le focus à l'intérieur d'un élément, et nous allons
+					modifier le template repris dans la démo.
+				</p>
+
+				<h3 lang="en">enforceFocus</h3>
+
+				<p>
+					Cette directive est chargé de "piéger" le focus dans un composant donné.
+				</p>
+
+				<p>
+					Dans la phase <code lang="en">link</code>, il faut sauvegarder le <span lang="en">focus</span>
+					courant puis revenir à l'élément lors de la fermeture de la modale. L'évenement
+					<code lang="en">$destroy</code> permet de savoir quand la directive est détruite du
+					<span lang="en">DOM</span>, ce qui correspond ici à la fermeture de la modale.
+					De plus, à l'ouverture, nous plaçons le focus sur le premier élement avec <code lang="en">iElm[0].focus()</code>.
+
+				</p>
+
+				<div class="highlight-doc">
+					<pre>
+						<code class="js" lang="en">
+a11yBootstrapModule.directive('enforceFocus', ['$document', '$timeout',function($document, $timeout){
+  return {
+    link: function($scope, iElm) {
+
+      //Save current focus
+      var modalOpener = $document[0].activeElement;
+      $timeout(function(){
+        iElm[0].focus()
+      });
+
+      $scope.$on('$destroy',function() {
+        //back to first focus
+        modalOpener.focus();
+      });
+
+    }
+  };
+}])
+						</code>
+					</pre>
+				</div>
+
+				<p>
+					Toujours dans la directive <code lang="en">enforceFocus</code>, il faut forcer
+					le <span lang="en">focus</span> dans la modale. Il suffit d'écouter l'évenement <span lang="en">focus</span> sur le document.
+					Si le <span lang="en">focus</span> tombe en dehors, nous le replaçons dans la modale.
+					Nous ajoutons donc la fonction à l'initialisation avec <code lang="en">addEventListener</code>.
+				</p>
+
+				<div class="highlight-doc">
+					<pre>
+						<code class="js" lang="en">
+a11yBootstrapModule.directive('enforceFocus', ['$document', '$timeout',function($document, $timeout){
+  return {
+    link: function($scope, iElm) {
+
+      //enforceFocus inside modal
+      function enforceFocus(evt) {
+        if (iElm[0] !== evt.target && !iElm[0].contains(evt.target)) {
+          iElm[0].focus();
+        }
+      }
+      $document[0].addEventListener('focus', enforceFocus, true);
+
+    }
+  };
+}]);
+						</code>
+					</pre>
+				</div>
+				<p>
+					Il nous reste à régler le problème de <kbd lang="en">Shift+Tab</kbd>. Il faut écouter les évenements <code lang="en">keydown</code>
+					sur le premier élément <code lang="en">(iElm)</code>. Si les touches <kbd lang="en">Shift+Tab</kbd> sont activés sur le premier élément
+					nous renvoyons au dernier élément. La fonction <code lang="en">lastFocusable</code> détermine le dernier élément focusable.
+				</p>
+
+				<div class="highlight-doc">
+					<pre>
+						<code class="js" lang="en">
+a11yBootstrapModule.directive('enforceFocus', ['$document', '$timeout',function($document, $timeout){
+  return {
+    link: function($scope, iElm) {
+
+      var tababbleSelector = 'a[href], area[href], input:not([disabled]),'+
+      ' button:not([disabled]),select:not([disabled]), textarea:not([disabled]),'+
+      ' iframe, object, embed, *[tabindex], *[contenteditable]';
+
+      //return lastFocusable element inside modal
+      function lastFocusable(domEl) {
+        var list = domEl.querySelectorAll(tababbleSelector);
+        return list[list.length - 1];
+      }
+
+      var lastEl = lastFocusable(iElm[0]);
+
+      //focus lastElement when shitKey Tab on first element
+      function shiftKeyTabTrap (evt) {
+        if(iElm[0] === evt.target && evt.shiftKey && evt.keyCode === 9){
+          lastEl.focus();
+          evt.preventDefault();
+        }
+      }
+      iElm.bind('keydown', shiftKeyTabTrap);
+    }
+  };
+}]);
+						</code>
+					</pre>
+				</div>
+
+				<p>
+					Lors de la destruction de la directive, on détache les gestionnaires d'événements.
+				</p>
+
+				<div class="highlight-doc">
+					<pre>
+						<code class="js" lang="en">
+a11yBootstrapModule.directive('enforceFocus', ['$document', '$timeout',function($document, $timeout){
+  return {
+    link: function($scope, iElm) {
+
+      $scope.$on('$destroy',function() {
+        //Remove event listener
+        $document[0].removeEventListener('focus', enforceFocus, true);
+      });
+    }
+  };
+}]);
+						</code>
+					</pre>
+				</div>
+
+				<p>
+					Il faut modifier le <span lang="en">template</span> d'origine pour ajouter notre directive via l'attribut
+					<code lang="en">enforce-focus</code>.
+				</p>
+				<p>
+					Dans cette bibliothèque, la modale est ajouter à la fin du <code lang="en">body</code>.
+					Ce qui fait sortir le <span lang="en">focus</span> de la fenêtre lors de l'appui successif sur <kbd>Tab</kbd>.
+					Il faut donc ajouter un élément pour piéger le focus avant qu'il sorte du contenu principal du <code lan="en">body</code>. Dans l'exemple ci-dessous,
+					l'ajout de l'élèment à la fin <code lang="en">&lt;div tabindex="0">&lt;/div></code> permet de piéger le focus.
+				</p>
+
+				<div class="highlight-doc">
+					<pre>
+						<code class="js" lang="en">
+angular.module("template/modal/window.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("template/modal/window.html",
+    "&lt;div>&lt;div enforce-focus tabindex=\"-1\" role=\"dialog\" class=\"modal fade\" ng-class=\"{in: animate}\" ng-style=\"{'z-index': 1050 + index*10, display: 'block'}\" ng-click=\"close($event)\">\n" +
+    "    &lt;div class=\"modal-dialog\" ng-class=\"{'modal-sm': size == 'sm', 'modal-lg': size == 'lg'}\">&lt;div class=\"modal-content\" modal-transclude>&lt;/div>&lt;/div>\n" +
+    "&lt;/div>&lt;div tabindex=\"0\">&lt;/div>&lt;/div>");
+}]);
+						</code>
+					</pre>
+				</div>
+
+				<h3 lang="en">Sémantique de la modale</h3>
+
+				<p>
+					Il manque toujours l'attribut <code lang="en">aria-labelledby</code>, qui peut facilement être ajouté dans le <span lang="en">template</span> pour faire référence au titre de notre modal.
+				</p>
+
+				<div class="highlight-doc">
+					<pre>
+						<code class="js" lang="en">
+angular.module("template/modal/window.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("template/modal/window.html",
+    "&lt;div>&lt;div enforce-focus tabindex=\"-1\" aria-labelledby=\"titre-modal\" role=\"dialog\" class=\"modal fade\" ng-class=\"{in: animate}\" ng-style=\"{'z-index': 1050 + index*10, display: 'block'}\" ng-click=\"close($event)\">\n" +
+    "    &lt;div class=\"modal-dialog\" ng-class=\"{'modal-sm': size == 'sm', 'modal-lg': size == 'lg'}\">&lt;div class=\"modal-content\" modal-transclude>&lt;/div>&lt;/div>\n" +
+    "&lt;/div>&lt;div tabindex=\"0\">&lt;/div>&lt;/div>");
+}]);
+						</code>
+					</pre>
+				</div>
+
+				<div class="highlight-doc">
+					<pre>
+						<code class="html" lang="en" ng-non-bindable>
+&lt;script type="text/ng-template" id="myModalContent.html">
+	&lt;div class="modal-header">
+		&lt;h3 id="titre-modal" class="modal-title">Une modale&lt;/h3>
+	&lt;/div>
+	&lt;div class="modal-body">
+		&lt;div ng-repeat="item in items">
+			&lt;button type="button" class="btn btn-default" ng-click="selected.item = item">{{ item }}&lt;/button>
+		&lt;/div>
+		Sélection: &lt;b>{{ selected.item }}&lt;/b>
+	&lt;/div>
+	&lt;div class="modal-footer">
+		&lt;button type="button" class="btn btn-primary" ng-click="ok()">OK&lt;/button>
+		&lt;button type="button" class="btn btn-warning" ng-click="cancel()">Annuler&lt;/button>
+	&lt;/div>
+&lt;/script>
+						</code>
+					</pre>
+				</div>
+			</article>
+
+
+
+			<article>
+				<header>
+					<h2 id="progressbar_link" tabindex="-1" lang="en">Progressbar</h2>
+				</header>
+
+				<div>
+					<h3 id="titre-progress">Démonstration</h3>
+
+
+					<div class="bs-example" ng-controller="ProgressDemoCtrl">
+						<progressbar animate="false" aria-labelledby="titre-progress" id="progressbar" value="dynamic" type="success">
+							<b>{{dynamic}}%</b>
+						</progressbar>
+						<div id="region" aria-busy="{{busy}}" aria-describedby="progressbar">
+							<p>Région mise a jour par la progressbar</p>
+							<button class="btn btn-sm btn-primary" type="button" ng-click="start()">Démarrer</button>
+						</div>
+
+					</div>
+				</div>
+
+				<h3>Corrections</h3>
+
+				<p>Plusieurs améliorations sont nécessaires pour rendre ce composant accessible :</p>
+
+				<ul>
+					<li>
+						La <span lang="en">progress bar</span> doit posséder un attribut
+						<code lang="en">title</code> ou <code lang="en">aria-labelledby</code>
+						faisant office de nom
+					</li>
+				</ul>
+
+				<p>Si la <span lang="en">progress bar</span> met à jour une zone de l'interface :</p>
+
+				<ul>
+					<li>
+						Cette zone doit comporter un attribut <code lang="en">aria-describedby="id-de-la-progress-bar"</code>
+						qui la lie à la <span lang="en">progress bar</span>.
+					</li>
+					<li>
+						Lorsqu'une mise à jour est en cours, la zone doit comporter un attribut
+						<code lang="en">aria-busy="true"</code>, indiquant que son contenu est
+						en cours de mise à jour.
+					</li>
+				</ul>
+
+				<p>
+					On peut ajouter directement l'attribut <code lang="en">aria-labelledby</code> sur le composant AngularJS.
+				</p>
+
+				<div class="highlight-doc">
+					<pre>
+						<code class="html" lang="en" ng-non-bindable>
+&lt;h3 id="titre-progress">Dynamic&lt;/h3>
+&lt;progressbar animate="false" aria-labelledby="titre-progress" value="dynamic" type="success">
+	&lt;b>{{dynamic}}%&lt;/b>
+&lt;/progressbar>
+						</code>
+					</pre>
+				</div>
+
+				<p>
+					Dans le cas ou la <span lang="en">progress bar</span> met à jour une zone
+					de l'interface, il est nécessaire de renseigner plusieurs informations pour
+					les lier ensemble.
+				</p>
+				<p>
+					On peut ajouter directement l'attribut <code lang="en">aria-describedby</code> HTML ainsi que l'id sur le composant.
+					Il faut ensuite piloter la valeur de <code lang="en">$scope.busy</code> dans le contrôleur de l'application suivant l'état du chargement.
+				</p>
+
+				<div class="highlight-doc">
+					<pre>
+						<code class="html" lang="en" ng-non-bindable>
+&lt;progressbar animate="false" aria-labelledby="titre-progress" id="progressbar" value="dynamic" type="success">
+	&lt;b>{{dynamic}}%&lt;/b>
+&lt;/progressbar>
+&lt;div id="region" aria-busy="{{busy}}" aria-describedby="progressbar">
+	&lt;p>Région mise a jour par la progressbar&lt;/p>
+	&lt;button class="btn btn-sm btn-primary" type="button" ng-click="start()">Démarrer&lt;/button>
+&lt;/div>
+						</code>
+					</pre>
+				</div>
+
+				<div class="highlight-doc">
+					<pre>
+						<code class="js" lang="en">
+//Exemple
+app.controller('ProgressDemoCtrl', ['$scope', '$timeout',function ($scope, $timeout) {
+	$scope.busy = false;
+	$scope.dynamic = 0;
+
+	$scope.start = function() {
+		progress();
+	};
+
+	function progress() {
+
+		$scope.busy = true;
+
+		if ( $scope.dynamic < 100 ) {
+			$scope.dynamic++;
+			$timeout( progress, 50 );
+		}else{
+			$scope.busy = false;
+		}
+	}
+}]);
+						</code>
+					</pre>
+				</div>
+			</article>
+
+			<article id="tuto-tabs">
+				<header>
+					<h2 id="tabpanel_link" tabindex="-1" lang="en">Tabpanel</h2>
+				</header>
+
+				<div>
+					<h3>Démonstration</h3>
+
+					<div class="bs-example" ng-controller="TabsDemoCtrl">
+
+						<tabset tabpanel>
+							<tab heading="Titre statique 1">Contenu statique</tab>
+							<tab heading="Titre statique 2">Contenu statique avec un <a href="#">lien</a></tab>
+							<tab ng-repeat="tab in tabs" heading="{{tab.title}}" active="tab.active" disabled="tab.disabled">
+								{{tab.content}}
+							</tab>
+						</tabset>
+
+
+						<script type="text/ng-template" id="template/tabs/tabset.html">
+							<div>
+								<ul role="tablist" keyboard-rotate="1" class="nav nav-{{type || 'tabs'}}" ng-class="{'nav-stacked': vertical, 'nav-justified': justified}" ng-transclude></ul>
+								<div class="tab-content">
+									<div role="tabpanel" class="tab-pane"
+									ng-repeat="tab in tabs"
+									tabindex="0"
+									ng-class="{active: tab.active}"
+									tab-content-transclude="tab">
+									</div>
+								</div>
+							</div>
+						</script>
+
+
+						<script type="text/ng-template" id="template/tabs/tab.html">
+							<li role="tab" ng-class="{active: active, disabled: disabled}" aria-selected="{{active ? 'true' : 'false'}}">
+								<a tabindex="{{active ? '0' : '-1'}}" href ng-click="select()" tab-heading-transclude>{{heading}}</a>
+							</li>
+						</script>
+					</div>
+				</div>
+
+				<div>
+					<h3>Corrections</h3>
+
+					<p>Plusieurs améliorations sont nécessaires pour rendre ce composant accessible :</p>
+
+					<ul>
+						<li>La liste d'onglets doit posséder un attribut <code lang="en">role="tablist"</code></li>
+						<li>Chaque onglet doit posséder un attribut <code lang="en">role="tab"</code></li>
+						<li>Chaque panneau doit posséder un attribut <code lang="en">role="tabpanel"</code></li>
+						<li>
+							Chaque onglet actif doit posséder un attribut <code lang="en">aria-selected="true"</code>
+							(ou <code lang="en">"false"</code> s'il est inactif) pour préciser son état.
+						</li>
+						<li>
+							Chaque onglet doit posséder un attribut <code lang="en">aria-controls="id-du-panneau"</code>
+							qui le lie au panneau qu'il contrôle.
+						</li>
+						<li>
+							Chaque panneau doit posséder un attribut <code lang="en">aria-labelledby="id-de-l-onglet"</code>
+							qui le lie à l'onglet qui le contrôle.
+						</li>
+						<li>
+							Depuis un onglet, les touches <kbd title="haut">↑</kbd> et <kbd title="gauche">←</kbd>
+							doivent permettre d'atteindre l'onglet précédent.
+						</li>
+						<li>
+							Depuis un onglet, les touches <kbd title="bas">↓</kbd> et <kbd title="droite">→</kbd>
+							doivent permettre d'atteindre l'onglet suivant.
+						</li>
+					</ul>
+
+					<p ng-non-bindable>
+						Il faut dans un premier temps corriger le <span lang="en">template</span> par défaut. On peut facilement ajouter les attributs <code lang="en">role</code>
+						<span lang="en">tablist</span> et <span lang="en">tabpanel</span> sur le template <code lang="en">template/tabs/tabset.html</code>.
+						On peut ensuite ajouter le role <span lang="en">tab</span> sur le <code lang="en">template/tabs/tab.html</code>.
+						Pour corriger <code lang="en">aria-selected="true"</code> sur le template <code lang="en">template/tabs/tab.html</code>
+						on peut utiliser une expression Angular pour changer la valeur en fonction du <code lang="en">$scope</code> active. Ce qui donne
+						<code lang="en">aria-selected="{{active ? 'true' : 'false'}}"</code>.
+					</p>
+
+					<div class="highlight-doc" ng-non-bindable>
+						<pre>
+							<code class="html" lang="en">
+&lt;script type="text/ng-template" id="template/tabs/tabset.html">
+	&lt;div>
+		&lt;ul role="tablist" class="nav nav-{{type || 'tabs'}}" ng-class="{'nav-stacked': vertical, 'nav-justified': justified}" ng-transclude>&lt;/ul>
+		&lt;div class="tab-content">
+			&lt;div role="tabpanel" class="tab-pane"
+			ng-repeat="tab in tabs"
+			tabindex="0"
+			ng-class="{active: tab.active}"
+			tab-content-transclude="tab">
+			&lt;/div>
+		&lt;/div>
+	&lt;/div>
+&lt;/script>
+
+
+&lt;script type="text/ng-template" id="template/tabs/tab.html">
+	&lt;li role="tab" ng-class="{active: active, disabled: disabled}" aria-selected="{{active ? 'true' : 'false'}}">
+		&lt;a tabindex="{{active ? '0' : '-1'}}" href ng-click="select()" tab-heading-transclude>{{heading}}&lt;/a>
+	&lt;/li>
+&lt;/script>
+							</code>
+						</pre>
+					</div>
+
+					<p>
+						Pour corriger <code lang="en">aria-controls="id-du-panneau"</code> et <code lang="en">aria-labelledby="id-de-l-onglet"</code>,
+						il faut procéder en 2 étapes. En premier créer un id unique, puis deuxième placer correctement l'id dans le DOM.
+					</p>
+
+					<p>
+						Il faut créer une factory qui renvoie un id unique. Cette fonction prend en paramètre un préfixe puis cherche dans le document
+						un id unique aléatoirement.
+					</p>
+
+					<div class="highlight-doc">
+						<pre>
+							<code class="js" lang="en">
+a11yBootstrapModule.factory('getUID', function(){
+  return function(prefix){
+    do {
+      prefix += Math.floor(Math.random() * 1000000);
+    } while (document.getElementById(prefix));
+    return prefix;
+  };
+});
+							</code>
+						</pre>
+					</div>
+
+					<p>
+						Nous allons maintenant placer cet id unique dans le DOM. Nous allons donc injecter notre <code lang="en">factory getUID</code>
+						dans la directive. Nous avons besoin d'ajouter les id après le rendu du DOM, il faut pour cela ajouter le service
+						<code lang="en">$timeout</code>. Ainsi la fonction <code lang="en">render()</code> sera appliquée après le rendu du DOM.
+					</p>
+
+					<div class="highlight-doc">
+						<pre>
+							<code class="js" lang="en">
+a11yBootstrapModule.directive('tabpanel', ['getUID', '$timeout',function(getUID, $timeout){
+  return {
+    link: function($scope, iElm, iAttrs, controller) {
+
+
+      function render() {}
+
+      $timeout(render,0);
+
+    }
+  };
+}]);
+							</code>
+						</pre>
+					</div>
+
+					<p>
+						Dans un premier temps, il faut récupérer le tableau de <span lang="en">tabs</span> et de <span lang="en">tabpanels</span>,
+						puis le pacourir avec un <code lang="en">forEach</code>.
+						Pour chaque tab nous devons générer un id unique, y affecter et ajouter l'attribut <code lang="en">aria-labelledby</code>
+						au panel correspondant. De la même manière, pour chaque panel, il faut générer un id unique, il affecter et ajouter l'attribut
+						<code lang="en">aria-controls</code> au <span lang="en">tab</span> correspondant.
+					</p>
+
+					<div class="highlight-doc">
+						<pre>
+							<code class="js" lang="en">
+a11yBootstrapModule.directive('tabpanel', ['getUID', '$timeout',function(getUID, $timeout){
+  return {
+    link: function($scope, iElm, iAttrs, controller) {
+
+
+      function render() {
+
+        var tablist = iElm[0].firstElementChild;
+        var tabs = angular.element(tablist).children();
+
+        var tabContent = iElm[0].lastElementChild;
+        var tabpanels = angular.element(tabContent).children();
+
+        angular.forEach(angular.element(tabs), function(value, key){
+
+          var tab = angular.element(value);
+          var panel = angular.element(tabpanels[key]);
+
+          var idtab = getUID('tab-');
+          tab.attr('id', idtab);
+          panel.attr('aria-labelledby', idtab);
+
+          var idpanel = getUID('panel-');
+          panel.attr('id', idpanel);
+          tab.attr('aria-controls', idpanel);
+
+        });
+      }
+
+      $timeout(render,0);
+
+    }
+  };
+}]);
+							</code>
+						</pre>
+					</div>
+
+					<p>
+						Pour la correction de la gestion clavier, on peut reprendre la <a href="#keyboard-rotate">directive <code lang="en">keyboardRotate</code></a> avec
+						le paramètre <code lang="en">recursion</code> à 1. On donc ajouter <code lang="en">keyboard-rotate="1"</code> à notre template.
+					</p>
+
+					<div class="highlight-doc">
+						<pre>
+							<code class="html" lang="en">
+&lt;script type="text/ng-template" id="template/tabs/tabset.html">
+	&lt;div>
+		&lt;ul role="tablist" keyboard-rotate="1" class="nav nav-{{type || 'tabs'}}" ng-class="{'nav-stacked': vertical, 'nav-justified': justified}" ng-transclude>&lt;/ul>
+		&lt;div class="tab-content">
+			&lt;div role="tabpanel" class="tab-pane"
+			ng-repeat="tab in tabs"
+			tabindex="0"
+			ng-class="{active: tab.active}"
+			tab-content-transclude="tab">
+			&lt;/div>
+		&lt;/div>
+	&lt;/div>
+&lt;/script>
+							</code>
+						</pre>
+					</div>
+
+				</div>
+			</article>
+
+			<article>
+				<header>
+					<h2 id="tooltip_link" tabindex="-1" lang="en">Tooltip</h2>
+				</header>
+
+				<div>
+					<h3>Démonstration</h3>
+
+					<div class="bs-example" ng-controller="TooltipDemoCtrl">
+						<form role="form">
+							<div class="form-group">
+								<label>Affichage au clic
+									<input type="text" value="Cliquez !" tooltip="Vous me voyez ?" tooltip-trigger="focus" tooltip-placement="right" class="form-control" />
+								</label>
+							</div>
+						</form>
+					</div>
+				</div>
+
+				<h3>Corrections</h3>
+
+				<p>Plusieurs améliorations sont nécessaires pour rendre ce composant accessible :</p>
+
+				<ul>
+					<li>Le tooltip doit posséder un attribut <code lang="en">role="tooltip"</code></li>
+					<li>Le texte doit être lié au tooltip par un attribut <code lang="en">aria-describedby</code></li>
+					<li>Le tooltip doit pouvoir être caché lors de l'appui sur <kbd>Echap</kbd></li>
+				</ul>
+
+				<p>
+					Pour corriger et manipuler le DOM, il faut créer une directive du même nom d'origine, <code lang="en">tooltipPopup</code>.
+					Lors de la création de la <span lang="en">tooltip</span>, il faut ajouter son role et un identifiant unique.
+					On va pouvoir ici réutiliser la <code lang="en">factory getUID</code> pour générer un id unique.
+				</p>
+
+				<p>
+					On peut de cette façon ajouter un id à la <span lang="en">tooltip</span>, et l'attribut <code lang="en">aria-describedby</code>
+					à l'élément d'origine.
+				</p>
+
+				<p>
+					Lors de la destruction, il faut retirer l'attribut <code lang="en">aria-describedby</code> de l'élément d'origine.
+				</p>
+
+				<div class="highlight-doc">
+					<pre>
+						<code class="js" lang="en">
+a11yBootstrapModule.directive('tooltipPopup', ['getUID',function(getUID){
+  return {
+    link: function($scope, iElm) {
+
+      //Add role tooltip
+      iElm.attr('role', 'tooltip');
+
+      //Add a Unique ID
+      var idtooltip = getUID('tooltip-');
+      iElm.attr('id', idtooltip);
+      var originElement = angular.element(iElm[0].previousElementSibling);
+      originElement.attr('aria-describedby', idtooltip);
+
+      $scope.$on('$destroy',function() {
+        originElement.removeAttr('aria-describedby');
+      });
+
+    }
+  };
+}]);
+						</code>
+					</pre>
+				</div>
+
+				<p>
+					Nous pouvons maintenant compléter la directive en ajoutant un gestionnaire d'évènement pour la touche <kbd>Echap</kbd>.
+					La fonction <code lang="en">dismissTooltip</code> va écouter la touche <kbd>Echap</kbd>, pour supprimer la
+					<span lang="en">tooltip</span> lors de l'appui. Lors de la destruction, on retire le gestionnaire d'évènements,
+					<code lang="en">originElement.unbind('keyup', dismissTooltip);</code>.
+				</p>
+
+				<div class="highlight-doc">
+					<pre>
+						<code class="js" lang="en">
+a11yBootstrapModule.directive('tooltipPopup', ['getUID',function(getUID){
+  return {
+    link: function($scope, iElm) {
+
+      //Remove tooltip on keyup ESC
+      function dismissTooltip (e) {
+        if(e.keyCode === 27){
+          iElm.remove();
+        }
+      }
+      originElement.bind('keyup', dismissTooltip);
+
+      $scope.$on('$destroy',function() {
+        originElement.unbind('keyup', dismissTooltip);
+      });
+
+    }
+  };
+}]);
+						</code>
+					</pre>
+				</div>
+			</article>
+
+
+
+
+			<article>
+				<header>
+					<h2 id="accordion_link" tabindex="-1" lang="en">Accordion</h2>
+				</header>
+
+				<div>
+					<h3>Démonstration</h3>
+
+					<div lang="en" class="bs-example" ng-controller="AccordionDemoCtrl">
+
+						<div class="checkbox">
+							<label>
+								<input type="checkbox" ng-model="oneAtATime">
+								Ouverture d'un seul panneau à la fois
+							</label>
+						</div>
+						<accordion aria-multiselectable="{{!oneAtATime}}" close-others="oneAtATime">
+							<accordion-group heading="Panneau initialement ouvert" is-open="status.isFirstOpen" is-disabled="status.isFirstDisabled">
+								Ce contenu est défini dans le <span lang="en">template</span>.
+							</accordion-group>
+							<accordion-group heading="Contenu dynamique">
+								<p>La taille du panneau s'adapte au contenu.</p>
+								<button type="button" class="btn btn-default btn-sm" ng-click="addItem()">Ajouter un élément</button>
+								<div ng-repeat="item in items">{{item}}</div>
+							</accordion-group>
+							<accordion-group is-open="status.open">
+								<accordion-heading>
+									HTML dans l'en-tête <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': status.open, 'glyphicon-chevron-right': !status.open}"></i>
+								</accordion-heading>
+								Un peu de contenu pour illustrer les en-têtes HTML.
+							</accordion-group>
+						</accordion>
+					</div>
+				</div>
+
+				<div>
+					<h3>Corrections</h3>
+
+					<p>Plusieurs améliorations sont nécessaires pour rendre ce composant accessible :</p>
+
+					<ul>
+						<li>
+							L'accordéon doit posséder un attribut <code lang="en">role="tablist"</code>
+							afin d'indiquer sa fonction
+						</li>
+						<li>Chaque titre doit posséder un attribut <code lang="en">role="tab"</code></li>
+						<li>
+							Chaque titre d'un panneau ouvert doit comporter un attribut
+							<code lang="en">aria-selected="true"</code> (ou <code lang="en">"false"</code>
+							si le panneau est fermé) pour préciser son état.
+						</li>
+						<li>
+							Chaque titre d'un panneau ouvert doit comporter un attribut
+							<code lang="en">aria-expanded="true"</code> (ou <code lang="en">"false"</code>
+							si le panneau est fermé) pour préciser son état.
+						</li>
+						<li>Chaque panneau doit posséder un attribut <code lang="en">role="tabpanel"</code></li>
+						<li>
+							Chaque panneau doit posséder un attribut <code lang="en">aria-labelledby="id-du-titre"</code>
+							pour le lier à son titre.
+						</li>
+						<li>
+							Chaque panneau ouvert doit posséder un attribut <code lang="en">aria-hidden="false"</code>
+							(ou <code lang="en">"true"</code> s'il est fermé) pour préciser son état.
+						</li>
+						<li>
+							Depuis un titre, les touches <kbd title="haut">↑</kbd> et <kbd title="gauche">←</kbd>
+							doivent permettre d'atteindre le titre précédent.
+						</li>
+						<li>
+							Depuis un titre, les touches <kbd title="bas">↓</kbd> et <kbd title="droite">→</kbd>
+							doivent permettre d'atteindre le titre suivant.
+						</li>
+						<li>
+							Depuis un titre, la touche <kbd>Espace</kbd> doit permettre d'ouvrir
+							ou de fermer le titre correspondant.
+						</li>
+					</ul>
+
+					<p>
+						On peut ajouter dans le <span lang="en">template</span> les attributs maquant pour gérer correctement accessibilité, les rôles et les attributs
+						<code lang="en">aria-selected</code>, <code lang="en">aria-expanded</code>, <code lang="en">aria-hidden</code>.
+					</p>
+
+					<div class="highlight-doc">
+						<pre>
+							<code class="js" lang="en" ng-non-bindable>
+angular.module('template/accordion/accordion-group.html', []).run(['$templateCache', function($templateCache) {
+  $templateCache.put('template/accordion/accordion-group.html',
+    '&lt;div unique-id="accordion" class="panel panel-default">\n' +
+    '  &lt;div role="tab" class="panel-heading">\n' +
+    '    &lt;h4 class="panel-title">\n' +
+    '      &lt;a aria-selected="{{isOpen}}" tabindex="{{isFocused ? \'0\' : \'-1\'}}" aria-expanded="{{isOpen}}" href class="accordion-toggle" ng-click="toggleOpen()" accordion-transclude="heading">&lt;span ng-class="{\'text-muted\': isDisabled}">{{heading}}&lt;/span>&lt;/a>\n' +
+    '    &lt;/h4>\n' +
+    '  &lt;/div>\n' +
+    '  &lt;div role="tabpanel" aria-hidden="{{!isOpen}}" class="panel-collapse" collapse="!isOpen">\n' +
+    '   &lt;div class="panel-body" ng-transclude>&lt;/div>\n' +
+    '  &lt;/div>\n' +
+    '&lt;/div>\n' +
+    '');
+}]);
+
+angular.module('template/accordion/accordion.html', []).run(['$templateCache', function($templateCache) {
+  $templateCache.put('template/accordion/accordion.html',
+    '&lt;div role="tablist" class="panel-group" ng-transclude>&lt;/div>');
+}]);
+							</code>
+						</pre>
+					</div>
+
+					<p>
+						Pour corriger la gestion clavier le composant d'origine n'expose pas correctement les bons paramètres. Il faut donc réimplémenter complétement la gestion clavier
+						en reprenant les directives <code lang="en">accordionGroup</code>, <code lang="en">accordion</code> et le contrôleur <code lang="en">AccordionController</code> puis les ajouter à notre template corrigé.
+					</p>
+
+					<div class="highlight-doc">
+						<pre>
+							<code class="js" lang="en">
+
+
+.controller('GroupController', ['$scope', '$attrs', 'accordionConfig', function ($scope, $attrs, accordionConfig) {
+
+  // This array keeps track of the accordion groups
+  this.groups = [];
+  this.groupsElem = [];
+
+  // This is called from the accordion-group directive to add itself to the accordion
+  this.addGroup = function(groupScope, element) {
+    var that = this;
+    this.groups.push(groupScope);
+    this.groupsElem.push(element);
+
+    groupScope.$on('$destroy', function (event) {
+      that.removeGroup(groupScope);
+    });
+  };
+
+  // This is called from the accordion-group directive when to remove itself
+  this.removeGroup = function(group) {
+    var index = this.groups.indexOf(group);
+    if ( index !== -1 ) {
+      this.groups.splice(index, 1);
+      this.groupsElem.splice(index, 1);
+    }
+  };
+
+  this.initFocusable = function() {
+    var that = this;
+    angular.forEach(this.groups, function (group, index) {
+      if ( index === 0 ) {
+        group.isFocused = true;
+        that.groups.indexSelected = 0;
+      }
+    });
+  };
+
+  this.nextFocusable = function(change) {
+    this.groups.indexSelected = this.modulo(this.groups.indexSelected + change,this.groups.length);
+    this.changeSelected();
+    var focusElement = this.groupsElem[this.groups.indexSelected];
+    focusElement[0].focus();
+  };
+
+  this.elemFocus = function(group) {
+    var index = this.groups.indexOf(group);
+    this.groups.indexSelected = index;
+    this.changeSelected();
+  };
+
+  this.changeSelected = function() {
+    var that = this;
+    angular.forEach(this.groups, function (group, index) {
+      group.isFocused = false;
+      if ( index === that.groups.indexSelected ) {
+        group.isFocused = true;
+      }
+    });
+  };
+
+  this.modulo = function(i, iMax) {
+    return ((i % iMax) + iMax) % iMax;
+  };
+
+}])
+
+// The group directive simply sets up the directive controller
+.directive('group', function () {
+  return {
+    restrict:'EA',
+    controller:'GroupController',
+    priority: 10000,
+    link: function(scope, element, attrs, groupCtrl) {
+      groupCtrl.initFocusable();
+    }
+  };
+})
+
+// The group-item directive indicates a block of html that will expand and collapse in an accordion
+.directive('groupItem', ['$timeout',function($timeout) {
+  return {
+    require:'^group',
+    restrict:'EA',
+    priority: 10000,
+    scope: true,
+    link: function(scope, element, attrs, groupCtrl) {
+      scope.isFocused = false;
+      groupCtrl.addGroup(scope, element);
+
+      function KeyTrap (evt) {
+        var keyCode = evt.keyCode;
+        //Right key and up key
+        if (keyCode === 39 || keyCode === 40) {
+          groupCtrl.nextFocusable(1);
+          scope.$apply();
+        }
+        //Left key and down key
+        if (keyCode === 37 || keyCode === 38) {
+          groupCtrl.nextFocusable(-1);
+          scope.$apply();
+        }
+      }
+
+      element.on('keydown',KeyTrap);
+      element.on('click', function() {
+        groupCtrl.elemFocus(scope);
+        scope.$apply();
+      });
+
+    }
+  };
+}])
+							</code>
+						</pre>
+					</div>
+
+					<p>
+						Pour corriger la touche <kdb>espace</kdb>, on peut créer une directive qui permettra
+						d'ajouter une fonction sur cette touche spécifique. Il suffit ensuite d'ajouter
+						notre directive <code lang="en">key-space="toggleOpen()"</code> au template <code>template/accordion/accordion-group.html</code>.
+					</p>
+
+					<div class="highlight-doc">
+						<pre>
+							<code class="js" lang="en" ng-non-bindable>
+.directive('keySpace', function() {
+  return function(scope, element, attrs) {
+    element.bind('keydown keypress', function(event) {
+      if(event.which === 32) {
+        scope.$apply(function(){
+          scope.$eval(attrs.keySpace);
+        });
+        event.preventDefault();
+      }
+    });
+  };
+})
+							</code>
+						</pre>
+					</div>
+					<p>
+						Malgrés la correction, lors ce que la restitution est activée (Firefox + NVDA) les touches gauche et droite ne sont plus opérationnelles.
+					</p>
+				</div>
+			</article>
+
+
+			<article>
+				<h2 id="radiobutton_link" tabindex="-1" lang="en">Radiobutton </h2>
+
+				<h3>Démonstration</h3>
+
+				<div class="bs-example">
+					<div ng-controller="RadioButtonsCtrl">
+						<pre>{{radioModel || 'null'}}</pre>
+						<div class="btn-group" role="radiogroup" keyboard-rotate="0">
+							<button type="button" class="btn btn-primary" role="radio" ng-model="radioModel" btn-radio="'Gauche'">Gauche</button>
+							<button type="button" class="btn btn-primary" role="radio" ng-model="radioModel" btn-radio="'Centre'">Centre</button>
+							<button type="button" class="btn btn-primary" role="radio" ng-model="radioModel" btn-radio="'Droite'">Droite</button>
+						</div>
+					</div>
+				</div>
+
+				<p>Pour ce composant, les erreurs relevées sont :</p>
+				<ul>
+					<li>Le composant ne possède pas de <code lang="en">role="radiogroup"</code>, et aucun bouton n'est sélectionné.</li>
+					<li>les éléments représentants les boutons radio ne possèdent pas la propriété <code lang="en">role="radio"</code></li>
+					<li>Lorsque un élément n'est pas sélectionné, il ne possède pas la propriété <code lang="en">aria-checked="false"</code></li>
+					<li>Lorsque un élément est sélectionné, il ne possède pas la propriété <code lang="en">aria-checked="true"</code></li>
+					<li>Aucune interaction au clavier n'est possible avec les touches <kbd title="haut">↑</kbd>, <kbd title="bas">↓</kbd>, <kbd title="droite">→</kbd>, <kbd title="gauche">←</kbd> ou <kbd title="tabulation">Tab</kbd></li>
+				</ul>
+
+				<h3>Corrections</h3>
+				<div class="bs-callout bs-callout-info">
+					<h4>Gestion des propriété des composants</h4>
+					<p>Pour cela, il suffit d'ajouter les propriétés <code lang="en">role="radiogroup"</code> et <code lang="en">role="radio"</code> sur les éléments lors de l'initialisation du composant.</p>
+				</div>
+				<div class="highlight-doc">
+					<pre><code class="html" lang="en" ng-non-bindable>&lt;div class=&quot;btn-group&quot; role=&quot;radiogroup&quot;&gt;
+	&lt;label class=&quot;btn btn-primary&quot; role=&quot;radio&quot; ng-model=&quot;radioModel&quot; btn-radio=&quot;&#39;Gauche&#39;&quot;&gt;Gauche&lt;/label&gt;
+	&lt;label class=&quot;btn btn-primary&quot; role=&quot;radio&quot; ng-model=&quot;radioModel&quot; btn-radio=&quot;&#39;Centre&#39;&quot;&gt;Centre&lt;/label&gt;
+	&lt;label class=&quot;btn btn-primary&quot; role=&quot;radio&quot; ng-model=&quot;radioModel&quot; btn-radio=&quot;&#39;Droite&#39;&quot;&gt;Droite&lt;/label&gt;
+&lt;/div&gt;</code></pre>
+				</div>
+
+				<div class="bs-callout bs-callout-info">
+					<h4>Gestion de l'accès au clavier</h4>
+					<p>Contrairement à la documentation AngularJS, on ne va pas utiliser des éléments <code lang="en">&lt;label&gt;</code> pour définir les boutons, car ces éléments ne sont pas accessibles au clavier, mais on va utiliser des éléments <code lang="en">&lt;button&gt;</code>.</p>
+				</div>
+				<div class="highlight-doc">
+					<pre><code class="html" lang="en" ng-non-bindable>&lt;div class=&quot;btn-group&quot; role=&quot;radiogroup&quot; keyboard-rotate="0"&gt;
+	&lt;button class=&quot;btn btn-primary&quot; role=&quot;radio&quot; ng-model=&quot;radioModel&quot; btn-radio=&quot;&#39;Gauche&#39;&quot;&gt;Gauche&lt;/button&gt;
+	&lt;button class=&quot;btn btn-primary&quot; role=&quot;radio&quot; ng-model=&quot;radioModel&quot; btn-radio=&quot;&#39;Centre&#39;&quot;&gt;Centre&lt;/button&gt;
+	&lt;button class=&quot;btn btn-primary&quot; role=&quot;radio&quot; ng-model=&quot;radioModel&quot; btn-radio=&quot;&#39;Droite&#39;&quot;&gt;Droite&lt;/button&gt;
+&lt;/div&gt;</code></pre>
+				</div>
+				<div class="bs-callout bs-callout-info">
+					<h4>Gestion de l'interaction au clavier</h4>
+					<p>Pour pouvoir gérer correctement l'interaction au clavier avec les touches <kbd title="haut">↑</kbd>, <kbd title="bas">↓</kbd>, <kbd title="droite">→</kbd>, <kbd title="gauche">←</kbd>, on créé une directive <code lang="en">keyboardRotate</code> qu'on applique sur le composant principal (qui a la propriété <code lang="en">role="radiogroup"</code>). Cette directive écoute les évènements au clavier mentionnés précédement, et suivant l'action effectuée, simule un clic sur le bouton suivant ou précédent (avec des tests si jamais on interagit sur le dernier bouton de la liste: l'utilisateur sera alors renvoyé sur le premier élément), et lui donne le focus. </p>
+
+					<p>Une seconde directive est utilisée, et surcharge la directive existante <code lang="en">btnRadio</code>. Celle-ci s'occupe d'attribuer le paramètre <code lang="en">aria-checked</code> avec la valeur adéquate, et rend uniquement accessible au clavier l'élément sélectionné. Pour ne pas donner accès au clavier aux éléments non sélectionnés, c'est la propriété <code lang="en">tabindex="-1"</code> qui est utilisée.</p>
+				</div>
+				<div id="keyboard-rotate" class="bs-callout bs-callout-warning">
+					<p>Pour la directive <code lang="en">keyboardRotate</code>, le paramètre <code lang="en">recursion</code> n'est pas utilisé dans cet exemple, mais est utilisé pour le composant <a href="#tabpanel_link" lang="en">tabpanel</a>. Il permet lorsqu'il est à 0 de se déplacer dans une liste d'élèments, et lorsqu'il est à 1 dans une liste imbriquée d'éléments. Il permet de naviguer correctmenet au clavier dans cette liste grace aux touches <kbd title="haut">↑</kbd>, <kbd title="bas">↓</kbd>, <kbd title="droite">→</kbd>, <kbd title="gauche">←</kbd>.</p>
+
+				</div>
+				<div class="highlight-doc">
+					<pre><code class="js hljs javascript" lang="en" ng-non-bindable>a11yBootstrapModule.directive(&#39;keyboardRotate&#39;,[&#39;$document&#39;,&#39;$timeout&#39;,function($document,$timeout){
+  return {
+    priority: 200, //Make sure watches are fired after any other directives that affect the ngModel value
+    restrict: &#39;A&#39;,
+    scope: {
+      param : &#39;@keyboardRotate&#39;,
+    },
+    link: function($scope, iElm, iAttrs, controller) {
+      var recursion = $scope.param;
+      $timeout(function(){
+        function KeyTrap (evt) {
+          var next;
+          var keyCode = evt.keyCode;
+          //Right key and up key
+          if (keyCode === 39 || keyCode === 40) {
+            next = evt.target.nextElementSibling;
+            if (recursion === &#39;1&#39;) {
+              next = evt.target.parentElement.nextElementSibling;
+            }
+            //if last go to first
+            if (!next) {
+              next = iElm.children()[0];
+            }
+          }
+          //Left key and down key
+          if (keyCode === 37 || keyCode === 38) {
+            next = evt.target.previousElementSibling;
+            if (recursion === &#39;1&#39;) {
+              next = evt.target.parentElement.previousElementSibling;
+            }
+            //if first go to last
+            if (!next) {
+              var child = iElm.children();
+              next = child[child.length-1];
+            }
+          }
+          //go to next element if defined (previous or next)
+          if (next) {
+            if (recursion === &#39;1&#39;) {
+              next = next.children[0];
+            }
+            next.click();
+            next.focus();
+          }
+        }
+        angular.element(iElm[0]).on(&#39;keydown&#39;,KeyTrap);
+      },0);
+    }
+  };
+}]).directive(&#39;btnRadio&#39;, [function(btnRadioProvider){
+  return {
+    require: [&#39;btnRadio&#39;, &#39;ngModel&#39;],
+    priority: 200, //Make sure watches are fired after any other directives that affect the ngModel value
+    link: function($scope, iElm, iAttrs, controller) {
+      var buttonsCtrl = controller[0], ngModelCtrl = controller[1];
+
+      //model -&gt; UI
+      ngModelCtrl.$render = function () {
+        var check = angular.equals(ngModelCtrl.$modelValue, $scope.$eval(iAttrs.btnRadio));
+        iElm.attr(&#39;aria-checked&#39;, check);
+        iElm.attr(&#39;tabindex&#39;, &#39;-1&#39;);
+        if (check) {
+          iElm.attr(&#39;tabindex&#39;, &#39;0&#39;);
+        }
+        iElm.toggleClass(buttonsCtrl.activeClass, angular.equals(ngModelCtrl.$modelValue, $scope.$eval(iAttrs.btnRadio)));
+      };
+
+    }
+  };</code></pre>
+				</div>
+			</article>
+
+			<article>
+				<header>
+					<h2 id="checkbox_link" tabindex="-1" lang="en">Checkbox</h2>
+				</header>
+
+				<div>
+					<h3>Démonstration</h3>
+
+
+					<div class="bs-example" ng-controller="CheckboxButtonsCtrl">
+						<h4>Une simple <span lang="en">checkbox</span></h4>
+						<pre>{{singleModel}}</pre>
+						<button type="button" class="btn btn-primary" ng-model="singleModel" btn-checkbox btn-checkbox-true="123" btn-checkbox-false="0">
+							Simple
+						</button>
+						<h4 id="titre-checkbox">Un groupe de <span lang="en">Checkbox</span></h4>
+						<pre>{{checkModel}}</pre>
+						<div role="group" aria-labelledby="titre-checkbox" class="btn-group">
+							<button role="checkbox" class="btn btn-primary" ng-model="checkModel.left" btn-checkbox>Gauche</button>
+							<button role="checkbox" class="btn btn-primary" ng-model="checkModel.middle" btn-checkbox>Centre</button>
+							<button role="checkbox" class="btn btn-primary" ng-model="checkModel.right" btn-checkbox>Droite</button>
+						</div>
+					</div>
+				</div>
+
+				<h3>Corrections</h3>
+
+				<p>Plusieurs améliorations sont nécessaires pour rendre ce composant accessible :</p>
+
+				<ul>
+					<li>La checkbox doit posséder un attribut <code lang="en">role="checkbox"</code>.</li>
+					<li>La checkbox doit posséder un attribut <code lang="en">aria-checked</code> suivant l'état en cours.</li>
+					<li>L'élément structurant le groupe possède un <code lang="en">role="group"</code>.</li>
+					<li>L'élément structurant possède une propriété <code lang="en">aria-labelledby="[ID_titre]"</code> référençant le titre <code>role="group"</code>.</li>
+					<li>La touche <kbd>espace</kbd> permet de cocher/décocher la checkbox.</li>
+				</ul>
+
+				<p>
+					Il faut dans un premier temps ajouter la sémantique. Ce qui peut facilement être ajouter dans la partie HTML.
+					On ajoute donc les attributs <code lang="en">role</code> et <code lang="en">aria-labelledby</code> en reprenant le titre.
+				</p>
+
+				<div class="highlight-doc">
+					<pre>
+						<code class="html" lang="en">
+&lt;div role="group" aria-labelledby="titre-checkbox" class="btn-group">
+	&lt;label role="checkbox" class="btn btn-primary" ng-model="checkModel.left" btn-checkbox>Gauche&lt;/label>
+	&lt;label role="checkbox" class="btn btn-primary" ng-model="checkModel.middle" btn-checkbox>Centre&lt;/label>
+	&lt;label role="checkbox" class="btn btn-primary" ng-model="checkModel.right" btn-checkbox>Droite&lt;/label>
+&lt;/div>
+						</code>
+					</pre>
+				</div>
+
+				<p>
+					Pour gérer la touche <kbd>espace</kbd>, il suffit simplement de remplacer les balises <code lang="en">label</code> de la démo
+					par des balises <code lang="en">button</code>.
+				</p>
+
+				<div class="highlight-doc">
+					<pre>
+						<code class="html" lang="en">
+&lt;div role="group" aria-labelledby="titre-checkbox" class="btn-group">
+	&lt;button role="checkbox" class="btn btn-primary" ng-model="checkModel.left" btn-checkbox>Gauche&lt;/button>
+	&lt;button role="checkbox" class="btn btn-primary" ng-model="checkModel.middle" btn-checkbox>Centre&lt;/button>
+	&lt;button role="checkbox" class="btn btn-primary" ng-model="checkModel.right" btn-checkbox>Droite&lt;/button>
+&lt;/div>
+						</code>
+					</pre>
+				</div>
+
+				<p>
+					Il faut maintenant ajouter l'attribut <code lang="en">aria-checked</code> suivant l'état en cours.
+					Malheuresement, la bibliothèque AngularUi ne partage pas cette valeur. On va donc réimplémenter une partie de la bibliothèque
+					Pour changer cet attribut. Notre directive doit avoir une priorité plus élevé, pour surcharger la contrôleur d'origine.
+				</p>
+
+				<div class="highlight-doc">
+					<pre>
+						<code class="js" lang="en">
+a11yBootstrapModule.directive('btnCheckbox', [function(btnRadioProvider){
+  return {
+    require: ['btnCheckbox', 'ngModel'],
+    priority: 200, //Make sure watches are fired after any other directives that affect the ngModel value
+    link: function($scope, iElm, iAttrs, controller) {
+      var buttonsCtrl = controller[0], ngModelCtrl = controller[1];
+
+      function getTrueValue() {
+        return getCheckboxValue(iAttrs.btnCheckboxTrue, true);
+      }
+
+      function getCheckboxValue(attributeValue, defaultValue) {
+        var val = $scope.$eval(attributeValue);
+        return angular.isDefined(val) ? val : defaultValue;
+      }
+
+      //model -> UI
+      ngModelCtrl.$render = function () {
+      	var check = angular.equals(ngModelCtrl.$modelValue, getTrueValue());
+        iElm.attr('aria-checked', check);
+        iElm.toggleClass(buttonsCtrl.activeClass, check);
+      };
+
+    }
+  };
+}]);
+						</code>
+					</pre>
+				</div>
+			</article>
+
+			<article>
+
+				<h2 id="datepicker_link" tabindex="-1" lang="en">Datepicker</h2>
+
+				<h3>Démonstration</h3>
+
+				<div class="bs-example" ng-controller="DatepickerDemoCtrl">
+					<pre>La date sélectionnée est : <em>{{dt | date:'fullDate' }}</em></pre>
+
+					<h4 lang="en">Popup</h4>
+					<div class="row">
+						<div class="col-md-6">
+							<label for="rg-from">Entrer une date :</label>
+							<p class="input-group">
+								<input id="rg-from" type="text" class="form-control" datepicker-popup="{{format}}" ng-model="dt" is-open="opened" datepicker-options="dateOptions" ng-required="true" close-text="Close" />
+								<span class="input-group-btn">
+									<button type="button" class="btn btn-default" ng-click="open($event)"><i class="glyphicon glyphicon-calendar"></i><span class="sr-only">Ouvrir le <span lang="en">datepicker</span></span></button>
+								</span>
+							</p>
+						</div>
+					</div>
+
+					<hr />
+					<button type="button" class="btn btn-sm btn-info" ng-click="today()">Aujourd'hui</button>
+					<button type="button" class="btn btn-sm btn-default" ng-click="dt = '2009-08-24'">24/08/2009</button>
+					<button type="button" class="btn btn-sm btn-danger" ng-click="clear()">Effacer</button>
+				</div>
+
+				<p>Pour ce composant, les erreurs relevées sont :</p>
+				<ul>
+				<li>Aucun titre de jour ne possède un attribut <code lang="en">role="columnheader"</code></li>
+					<li>Aucune ligne qui contient les numéros de jours ne possède un attribut <code lang="en">role="row”</code></li>
+					<li>Pour chaque jour, il ne possède pas d'attribut <code lang="en">aria-selected</code> suivant la selection en cours.</li>
+					<li>Lors de l'utilisation de la touche <kdb>Echap</kdb>, le focus n'est pas redonné à l'élément ayant ouvert le calendrier.</li>
+				</ul>
+
+
+				<h3>Corrections</h3>
+				<div class="bs-callout bs-callout-info">
+					<h4>Gestion des attributs dans le tableau des jours</h4>
+					<p>On va surcharger le <span lang="en">template</span> de rendu du tableau des jours <code lang="en">template/datepicker/day.html</code>, et ajouter les attributs manquants <code lang="en">role="row”</code> sur les numéros de jours, et <code lang="en">role="columnheader"</code> sur les titres de jours.</p>
+					<p>La surchage de ce template permet également de gérer des attributs dynamiques <code lang="en">aria-selected</code> et leur valeur <code lang="en">true</code> si le jour est sélectionné ou <code lang="en">false</code> si le jour n'est pas sélectionné.</p>
+				</div>
+				<div class="highlight-doc">
+					<pre><code class="js" lang="en"  ng-non-bindable>
+angular.module(&#39;template/datepicker/day.html&#39;, []).run([&#39;$templateCache&#39;, function($templateCache) {
+  $templateCache.put(&#39;template/datepicker/day.html&#39;,
+    &#39;&lt;table role=&quot;grid&quot; aria-labelledby=&quot;{{uniqueId}}-title&quot; aria-activedescendant=&quot;{{activeDateId}}&quot;&gt;\n&#39; +
+    &#39;  &lt;thead&gt;\n&#39; +
+    &#39;    &lt;tr&gt;\n&#39; +
+    &#39;      &lt;th&gt;&lt;button type=&quot;button&quot; class=&quot;btn btn-default btn-sm pull-left&quot; ng-click=&quot;move(-1)&quot; tabindex=&quot;-1&quot;&gt;&lt;i class=&quot;glyphicon glyphicon-chevron-left&quot;&gt;&lt;/i&gt;&lt;/button&gt;&lt;/th&gt;\n&#39; +
+    &#39;      &lt;th colspan=&quot;{{5 + showWeeks}}&quot;&gt;&lt;button id=&quot;{{uniqueId}}-title&quot; role=&quot;heading&quot; aria-live=&quot;assertive&quot; aria-atomic=&quot;true&quot; type=&quot;button&quot; class=&quot;btn btn-default btn-sm&quot; ng-click=&quot;toggleMode()&quot; tabindex=&quot;-1&quot; style=&quot;width:100%;&quot;&gt;&lt;strong&gt;{{title}}&lt;/strong&gt;&lt;/button&gt;&lt;/th&gt;\n&#39; +
+    &#39;      &lt;th&gt;&lt;button type=&quot;button&quot; class=&quot;btn btn-default btn-sm pull-right&quot; ng-click=&quot;move(1)&quot; tabindex=&quot;-1&quot;&gt;&lt;i class=&quot;glyphicon glyphicon-chevron-right&quot;&gt;&lt;/i&gt;&lt;/button&gt;&lt;/th&gt;\n&#39; +
+    &#39;    &lt;/tr&gt;\n&#39; +
+    &#39;    &lt;tr&gt;\n&#39; +
+    &#39;      &lt;th ng-show=&quot;showWeeks&quot; class=&quot;text-center&quot;&gt;&lt;/th&gt;\n&#39; +
+    &#39;      &lt;th role=&quot;columnheader&quot; ng-repeat=&quot;label in labels track by $index&quot; class=&quot;text-center&quot;&gt;&lt;small aria-label=&quot;{{label.full}}&quot;&gt;{{label.abbr}}&lt;/small&gt;&lt;/th&gt;\n&#39; +
+    &#39;    &lt;/tr&gt;\n&#39; +
+    &#39;  &lt;/thead&gt;\n&#39; +
+    &#39;  &lt;tbody&gt;\n&#39; +
+    &#39;    &lt;tr role=&quot;row&quot; ng-repeat=&quot;row in rows track by $index&quot;&gt;\n&#39; +
+    &#39;      &lt;td ng-show=&quot;showWeeks&quot; class=&quot;text-center h6&quot;&gt;&lt;em&gt;{{ weekNumbers[$index] }}&lt;/em&gt;&lt;/td&gt;\n&#39; +
+    &#39;      &lt;td ng-repeat=&quot;dt in row track by dt.date&quot; class=&quot;text-center&quot; role=&quot;gridcell&quot; id=&quot;{{dt.uid}}&quot; aria-disabled=&quot;{{!!dt.disabled}}&quot;&gt;\n&#39; +
+    &#39;        &lt;button type=&quot;button&quot; style=&quot;width:100%;&quot; class=&quot;btn btn-default btn-sm&quot; aria-selected=&quot;{{dt.selected ? \&#39;true\&#39; : \&#39;false\&#39;}}&quot; ng-class=&quot;{\&#39;btn-info\&#39;: dt.selected, active: isActive(dt)}&quot; ng-class=&quot;{\&#39;btn-info\&#39;: dt.selected, active: isActive(dt)}&quot; ng-click=&quot;select(dt.date)&quot; ng-disabled=&quot;dt.disabled&quot; tabindex=&quot;-1&quot;&gt;&lt;span ng-class=&quot;{\&#39;text-muted\&#39;: dt.secondary, \&#39;text-info\&#39;: dt.current}&quot;&gt;{{dt.label}}&lt;/span&gt;&lt;/button&gt;\n&#39; +
+    &#39;      &lt;/td&gt;\n&#39; +
+    &#39;    &lt;/tr&gt;\n&#39; +
+    &#39;  &lt;/tbody&gt;\n&#39; +
+    &#39;&lt;/table&gt;\n&#39; +
+    &#39;&#39;);
+}]);
+					</code></pre>
+				</div>
+
+				<div class="bs-callout bs-callout-info">
+					<h4>Gestion de la touche [Echap]</h4>
+					<p>
+						Pour corriger la gestion clavier, il faut créer un directive qui enregistrera l'élèment actif à l'ouverture.
+						Puis on peut ajouter un gestionnaire d'évèment qui lorsque la touche <kdb>Echap</kdb> sera appuyé renverra le focus sur l'élèment précédant.
+					</p>
+				</div>
+				<div class="highlight-doc">
+					<pre><code class="js" lang="en" ng-non-bindable>
+a11yBootstrapModule.directive('datepickerPopupWrap', ['$document', function($document){
+  return {
+    link: function($scope, iElm, iAttrs, controller) {
+
+      var elemOpener;
+      $scope.$watch('isOpen', function(value) {
+        if (value) {
+          elemOpener = $document[0].activeElement;
+        }
+      });
+
+      function backToElemOpener (evt) {
+        if (evt.which === 27) {
+          $timeout(function() {
+            elemOpener.focus();
+          });
+        }
+      }
+      //Add event listener
+      iElm.bind('keydown', backToElemOpener);
+
+
+      $scope.$on('$destroy',function() {
+        //Remove event listener
+        iElm.unbind('keydown', backToElemOpener);
+      });
+    }
+  };
+}]);
+					</code></pre>
+				</div>
+
+			</article>
+
+			<article>
+				<h2>L'avis du développeur</h2>
+				<blockquote>
+				<p>
+					Les corrections de sémantique peuvent être résolues assez simplement en modifiant les <span lang="en">templates</span>,
+					si la bibliothèque d'origine expose correctement les données. La gestion au clavier peut se révéler
+					plus compliqué à gérer, mais ce n'est néanmoins pas insurmontable dans l'exemple de cette bibliothèque.
+					Certaines corrections ont parfois une approche assez détournées de la philosophie d'AnugarJs et le mieux reste une correction complète dans la bibliothèque d'origine.
+					Si la librairie de composant a encore de nombreuse erreurs; le framework AngularJs a fait un réel effort pour l'accessibilité
+					à partir de la version 1.3 avec l'apparition de <a lang="en" href="https://code.angularjs.org/1.3.7/docs/guide/accessibility">ngAria</a>.
+					Malheuresement à l'heure des tests, la librairie de composant <span lang="en">AngularJs Bootstrap</span> n'a pas encore migré avec cette nouvelle version.
+				</p>
+
+				<a href="scripts/angular-ui.js" download>Télécharger la correction angular-ui au format JavaScript (16Ko)</a>
+
+				</blockquote>
+			</article>
+
+		</section>
+
+	</main>
+
+	<footer role="contentinfo" class="navbar navbar-default navbar-static-bottom small">
+		<div class="container">
+			<h2>
+				Droits de reproduction
+				<small>Ce document est placé sous <a href="http://wiki.data.gouv.fr/wiki/Licence_Ouverte_/_Open_Licence">licence ouverte 1.0 ou ultérieure</a></small>
+			</h2>
+			<div class="row">
+				<div class="col-md-1">
+					<img src="../modernisation-logo.jpg" alt="Secrétariat général pour la modernisation de l'action publique" class="navbar-left">
+				</div>
+				<div class="col-md-5">
+					<p class="clear">Vous êtes libres de :</p>
+					<ul>
+						<li>Reproduire, copier, publier et transmettre ces informations ;</li>
+						<li>Diffuser et redistribuer ces informations ;</li>
+						<li>Adapter, modifier, extraire et transformer ces informations, notamment pour créer des informations dérivées ;</li>
+						<li>Exploiter ces informations à titre commercial, par exemple en la combinant avec d'autres informations, ou en l'incluant dans votre propre produit ou application.</li>
+					</ul>
+				</div>
+				<div class="col-md-6">
+					<p>Ces libertés s'appliquent sous réserve de mentionner la paternité de l'information d'origine : sa source et la date de sa dernière mise à jour. Le réutilisateur peut notamment s'acquitter de cette condition en indiquant un ou des liens hypertextes (URL) renvoyant vers le présent site et assurant une mention effective de sa paternité.</p><p>Cette mention de paternité ne doit ni conférer un caractère officiel à la réutilisation de ces informations, ni suggérer une quelconque reconnaissance ou caution par le producteur de l'information, ou par toute autre entité publique, du réutilisateur ou de sa réutilisation.</p>
+				</div>
+			</div>
+		</div>
+	</footer>
+
+	<script src="../bower_components/angular/angular.js"></script>
+	<script src="../bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+	<script src="scripts/angular-ui.js"></script>
+	<script src="../bower_components/highlightjs/highlight.pack.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+	<script type="text/javascript">
+
+		var app = angular.module('ui.bootstrap.demo', ['a11yBootstrap']);
+
+
+		/*************************************
+		* slider
+		**************************************/
+		app.controller('RatingDemoCtrl', function ($scope) {
+			$scope.rate = 7;
+			$scope.max = 10;
+			$scope.isReadonly = false;
+
+			$scope.hoveringOver = function(value) {
+				$scope.overStar = value;
+				$scope.percent = 100 * (value / $scope.max);
+			};
+
+		});
+
+		/*************************************
+		* Progressbar
+		**************************************/
+		app.controller('ProgressDemoCtrl', ['$scope', '$timeout',function ($scope, $timeout) {
+			$scope.busy = false;
+			$scope.dynamic = 0;
+
+			$scope.start = function() {
+				progress();
+			};
+
+			function progress() {
+
+				$scope.busy = true;
+
+				if ( $scope.dynamic < 100 ) {
+					$scope.dynamic++;
+					$timeout( progress, 50 );
+				}else{
+					$scope.busy = false;
+					console.log('done');
+				}
+			}
+		}]);
+
+		/*************************************
+		* Dialog
+		**************************************/
+
+		app.controller('ModalDemoCtrl', function ($scope, $modal, $log) {
+
+			$scope.items = ['item1', 'item2', 'item3'];
+
+			$scope.open = function (size) {
+
+				var modalInstance = $modal.open({
+					templateUrl: 'myModalContent.html',
+					controller: 'ModalInstanceCtrl',
+					size: size,
+					resolve: {
+						items: function () {
+							return $scope.items;
+						}
+					}
+				});
+
+				modalInstance.result.then(function (selectedItem) {
+					$scope.selected = selectedItem;
+				}, function () {
+					$log.info('Modal dismissed at: ' + new Date());
+				});
+			};
+		});
+
+		// Please note that $modalInstance represents a modal window (instance) dependency.
+		// It is not the same as the $modal service used above.
+
+		app.controller('ModalInstanceCtrl', function ($scope, $modalInstance, items) {
+
+			$scope.items = items;
+			$scope.selected = {
+				item: $scope.items[0]
+			};
+
+			$scope.ok = function () {
+				$modalInstance.close($scope.selected.item);
+			};
+
+			$scope.cancel = function () {
+				$modalInstance.dismiss('cancel');
+			};
+		});
+
+
+
+
+		/*************************************
+		* Tabpanel
+		**************************************/
+		app.controller('TabsDemoCtrl', function ($scope, $window) {
+			$scope.tabs = [
+				{ title:'Titre dynamique 1', content:'Contenu dynamique 1' },
+				{ title:'Titre dynamique 2', content:'Contenu dynamique 2' }
+			];
+		});
+
+
+		/*************************************
+		* Tooltip
+		**************************************/
+		app.controller('TooltipDemoCtrl', function(){});
+
+		/*************************************
+		* Accordion
+		**************************************/
+		app.controller('AccordionDemoCtrl', function ($scope) {
+			$scope.oneAtATime = true;
+
+			$scope.items = ['Item 1', 'Item 2', 'Item 3'];
+
+			$scope.addItem = function() {
+				var newItemNo = $scope.items.length + 1;
+				$scope.items.push('Item ' + newItemNo);
+			};
+
+			$scope.status = {
+				isFirstOpen: true,
+				isFirstDisabled: false
+			};
+		});
+
+		/*************************************
+		* Radiobuttons
+		**************************************/
+		app.controller('RadioButtonsCtrl', function ($scope) {
+			$scope.radioModel = 'Centre';
+		});
+
+		/*************************************
+		* CheckboxButtons
+		**************************************/
+		app.controller('CheckboxButtonsCtrl', function ($scope) {
+
+			$scope.singleModel = 123;
+
+			$scope.checkModel = {
+				left: false,
+				middle: true,
+				right: false
+			};
+
+		});
+
+		/*************************************
+		* Datepicker
+		**************************************/
+		app.controller('DatepickerDemoCtrl', function ($scope) {
+			$scope.today = function() {
+				$scope.dt = new Date();
+			};
+			$scope.today();
+
+			$scope.clear = function () {
+				$scope.dt = null;
+			};
+
+			$scope.open = function($event) {
+				$event.preventDefault();
+				$event.stopPropagation();
+
+				$scope.opened = true;
+			};
+
+			$scope.dateOptions = {
+				formatYear: 'yy',
+				startingDay: 1
+			};
+			$scope.format = 'dd/MM/yyyy';
+		});
+
+	</script>
+</body>
+</html>
