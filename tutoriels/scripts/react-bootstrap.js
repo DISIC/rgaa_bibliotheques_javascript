@@ -415,6 +415,42 @@
 		}
 	});
 
+	/**
+	 *	A simple demo container that allows to open a modal.
+	 */
+	root.ModalContainer = React.createClass({
+
+		mixins: [OverlayMixin],
+
+		getInitialState: function() {
+			return {
+				open: false
+			};
+		},
+
+		handleToggle: function() {
+			this.setState(function() {
+				return {
+					open: !this.state.open
+				};
+			});
+		},
+
+		render: function() {
+			return (
+				<Button onClick={this.handleToggle} bsStyle="primary">
+					Ouvrir
+				</Button>
+			);
+		},
+
+		renderOverlay: function() {
+			return this.state.open
+				? this.props.overlay(this.handleToggle)
+				: <span />;
+		}
+	});
+
 
 
 	/**
@@ -505,6 +541,63 @@
 		 */
 		render: function() {
 			return <ProgressBar {...this.props} ref="progress" />;
+		}
+	});
+
+	/**
+	 *	A simple demo container that updates it's child progress bar.
+	 */
+	root.ProgressBarContainer = React.createClass({
+
+		getInitialState: function() {
+			return {
+				value: 0
+			};
+		},
+
+		start: function() {
+			this.setState({
+				value: 0
+			}, function() {
+				clearInterval(this.interval);
+				this.interval = setInterval(this.update, 100);
+			});
+		},
+
+		update: function() {
+			var value = this.state.value + 5;
+
+			this.setState({
+				value: value
+			}, function() {
+				if (this.state.value >= 100) {
+					clearInterval(this.interval);
+				}
+			});
+		},
+
+		render: function() {
+			return (
+				<div>
+					{this.renderProgressBar()}
+
+					<button
+						type="button"
+						className="btn btn-sm btn-primary"
+						onClick={this.start}
+					>
+						Démarrer
+					</button>
+				</div>
+			);
+		},
+
+		renderProgressBar: function() {
+			var progressBar = React.Children.only(this.props.children);
+
+			return React.cloneElement(progressBar, {
+				now: this.state.value
+			});
 		}
 	});
 
