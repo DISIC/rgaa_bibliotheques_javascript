@@ -1,4 +1,4 @@
-#Accessibilité des bibliothèques JavaScript
+# Accessibilité des bibliothèques JavaScript
 
 Une étude de l'accessibilité des principales bibliothèques JavaScript a donné lieu à deux types de ressources :
 
@@ -13,3 +13,5 @@ Voici les bibliothèques étudiées :
 * React.
 
 Nous savons les limites de l'exercice, les bibliothèques étant amenées à évoluer. Ce projet vise à initier une démarche pour remonter les problèmes auprès des différents éditeurs de bibliothèques et les aider à prendre en compte l'accessibilité dans les développements de base.
+
+La partie tutoriel est consultable en ligne à l'adresse suivante https://disic.github.io/rgaa_bibliotheques_javascript/tutoriels/index.html
