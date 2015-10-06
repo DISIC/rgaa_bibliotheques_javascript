@@ -149,15 +149,12 @@
           'aria-valuemin':options.min,
           'aria-valuemax':options.max,
         };
-        //Optional attribut
-        attrHandle.title = (options.title ? (options.title[index] || null) : null);
-        attrHandle['aria-labelledby'] = (options.ariaLabelledby ? (options.ariaLabelledby[index] || null) : null);
 
-        if (typeof(options.labelledby[index] !== typeof undefined)) {
-          if(jQuery.type(options.labelledby[index]) === 'string') {
-            attrHandle.title =  options.labelledby[index];
-          }else if(jQuery.type(options.labelledby[index]) === 'object' && options.labelledby[index].length > 0){
-            attrHandle['aria-labelledby'] =  options.labelledby[index][0].id;
+        if (typeof(options.label[index] !== typeof undefined)) {
+          if(jQuery.type(options.label[index]) === 'string') {
+            attrHandle.title =  options.label[index];
+          }else if(jQuery.type(options.label[index]) === 'object' && options.label[index].length > 0){
+            attrHandle['aria-labelledby'] =  options.label[index][0].id;
           }
         }
         $(this).attr(attrHandle);
