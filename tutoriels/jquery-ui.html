@@ -33,7 +33,8 @@
 			top: 50%;
 			margin-top: -8px;
 		}
-		#slider {
+		#slider,
+		#slider2 {
 			margin: 20px;
 		}
 		pre{
@@ -311,7 +312,11 @@
 
 			<div id="slider"></div>
 
-			<div id="slider_label">Message via <code lang="en">aria-labelledby</code></div>
+			<p>Du contenu avec un <a href="#">lien</a> entres les composants</p>
+
+			<p id="slider_label">Titre du slider via <code lang="en">aria-labelledby</code></p>
+
+			<div id="slider2"></div>
 
 			<p>Du contenu avec un <a href="#">lien</a> après le composant</p>
 		</div>
@@ -329,12 +334,17 @@
 		<p>Pour corriger les problèmes d’accessibilité, nous avons ajouté deux nouveaux arguments lors de l’initialisation du slider :</p>
 		<ul>
 			<li><code lang="en">ariaValuetext</code> afin de pouvoir créer la valeur enrichie à partir de la valeur <code lang="en">aria-value</code> et ainsi la préfixer et la suffixer.</li>
-			<li><code lang="en">labelledby</code> : afin de définir une alternative au composant, ce paramètre peut être une chaîne de caractères ou alors une référence à un nœud du <abbr title="Document Object Model" lang="en">DOM</abbr>. Cet attribut doit être un tableau afin de pouvoir définir deux valeurs dans le cas des <span lang="en">sliders</span> à intervalles. Même si ces derniers ne rentrent pas dans le cas de l'étude, on ne souhaite pas induire d'anomalies pour cette configuration de <span lang="en">slider</span>.</li>
+			<li><code lang="en">label</code> : afin de définir une alternative au composant, ce paramètre peut être une chaîne de caractères ou alors une référence à un nœud du <abbr title="Document Object Model" lang="en">DOM</abbr>. Cet attribut doit être un tableau afin de pouvoir définir deux valeurs dans le cas des <span lang="en">sliders</span> à intervalles. Même si ces derniers ne rentrent pas dans le cas de l'étude, on ne souhaite pas induire d'anomalies pour cette configuration de <span lang="en">slider</span>.</li>
 		</ul>
 		<div class="highlight-doc">
 			<pre class="pre-scrollable"><code class="js" data-lang="js" lang="en">$( "#slider" ).slider({
 	ariaValuetext: '€',
-	labelledby: [$('#slider_label')]
+	label: ['curseur simple'] // chaine de caractères
+});
+
+$( "#slider2" ).slider({
+	ariaValuetext: '$',
+	label: [$('#slider_label')] // Référence à un noeud du DOM
 });</code></pre>
 		</div>
 
@@ -385,11 +395,11 @@
       var  attrHandle,
       options = this.options;
       this.handles.each(function(index) {
-       if (typeof(options.labelledby[index] !== typeof undefined)) {
-          if(jQuery.type(options.labelledby[index]) === 'string') {
-            attrHandle.title =  options.labelledby[index];
-          }else if(jQuery.type(options.labelledby[index]) === 'object' && options.labelledby[index].length > 0){
-            attrHandle['aria-labelledby'] =  options.labelledby[index][0].id;
+      if (typeof(options.label[index] !== typeof undefined)) {
+          if(jQuery.type(options.label[index]) === 'string') {
+            attrHandle.title =  options.label[index];
+          }else if(jQuery.type(options.label[index]) === 'object' && options.label[index].length > 0){
+            attrHandle['aria-labelledby'] =  options.label[index][0].id;
           }
         }
 
@@ -823,7 +833,12 @@
 		**************************************/
 		$( "#slider" ).slider({
 			ariaValuetext: '€',
-			labelledby: ['curseur simple']
+			label: ['curseur simple']
+		});
+
+		$( "#slider2" ).slider({
+			ariaValuetext: '$',
+			label: [$('#slider_label')]
 		});
 
 		/*************************************
