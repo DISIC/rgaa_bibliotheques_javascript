@@ -5,7 +5,6 @@
 	<title>Tutoriels -  SGMAP</title>
 	<link href="../bower_components/bootstrap/dist/css/bootstrap.css" rel="stylesheet">
 	<link href="../bower_components/bootstrapaccessibilityplugin/bs3.1.1/css/docs.min.css" rel="stylesheet">
-	<link href="../bower_components/jquery-ui/themes/base/all.css" rel="stylesheet" />
 	<link href="../bower_components/highlightjs/styles/monokai_sublime.css" rel="stylesheet"/>
 	<style type="text/css">
 		*:focus {
@@ -240,6 +239,9 @@ a11yBootstrapModule.directive('maDirective', ['$document', function($document){
 						qui a déclenché son ouverture, afin que l'utilisateur poursuive
 						la navigation.
 					</li>
+					<li>
+						Le clique en dehors de la modale ne doit pas provoquer sa fermeture.
+					</li>
 				</ul>
 
 				<p>
@@ -259,7 +261,7 @@ a11yBootstrapModule.directive('maDirective', ['$document', function($document){
 					courant puis revenir à l'élément lors de la fermeture de la modale. L'évenement
 					<code lang="en">$destroy</code> permet de savoir quand la directive est détruite du
 					<span lang="en">DOM</span>, ce qui correspond ici à la fermeture de la modale.
-					De plus, à l'ouverture, nous plaçons le focus sur le premier élement avec <code lang="en">iElm[0].focus()</code>.
+					De plus, à l'ouverture, nous plaçons le focus sur le premier élement ou la modale elle-même avec <code lang="en">firstElm.focus()</code>.
 
 				</p>
 
@@ -269,21 +271,37 @@ a11yBootstrapModule.directive('maDirective', ['$document', function($document){
 a11yBootstrapModule.directive('enforceFocus', ['$document', '$timeout',function($document, $timeout){
   return {
     link: function($scope, iElm) {
-
       //Save current focus
       var modalOpener = $document[0].activeElement;
-      $timeout(function(){
-        iElm[0].focus()
-      });
+      var modal = iElm[0].querySelectorAll('.modal-dialog');
 
       $scope.$on('$destroy',function() {
         //back to first focus
         modalOpener.focus();
       });
 
+      var tababbleSelector = 'a[href], area[href], input:not([disabled]), button:not([disabled]),select:not([disabled]), textarea:not([disabled]), iframe, object, embed, *[tabindex], *[contenteditable]';
+      //focus first element inside modal or modal himself
+      function firstFocusable(domEl) {
+        var firstElm;
+        var list = domEl.querySelectorAll(tababbleSelector);
+        if (list[0]) {
+          firstElm = list[0];
+        } else {
+          modal[0].setAttribute('tabindex', 0);
+          firstElm = modal[0];
+        }
+        return firstElm;
+      }
+
+      $timeout(function(){
+        var firstElm = firstFocusable(iElm[0]);
+        firstElm.focus();
+      });
+
     }
   };
-}])
+}]);
 						</code>
 					</pre>
 				</div>
@@ -301,14 +319,30 @@ a11yBootstrapModule.directive('enforceFocus', ['$document', '$timeout',function(
 a11yBootstrapModule.directive('enforceFocus', ['$document', '$timeout',function($document, $timeout){
   return {
     link: function($scope, iElm) {
+      var modal = iElm[0].querySelectorAll('.modal-dialog');
 
       //enforceFocus inside modal
       function enforceFocus(evt) {
-        if (iElm[0] !== evt.target && !iElm[0].contains(evt.target)) {
-          iElm[0].focus();
+        var firstElm = firstFocusable(iElm[0]);
+        if ( firstElm !== evt.target && !iElm[0].contains(evt.target)) {
+          firstElm.focus();
         }
       }
       $document[0].addEventListener('focus', enforceFocus, true);
+
+      var tababbleSelector = 'a[href], area[href], input:not([disabled]), button:not([disabled]),select:not([disabled]), textarea:not([disabled]), iframe, object, embed, *[tabindex], *[contenteditable]';
+      //focus first element inside modal or modal himself
+      function firstFocusable(domEl) {
+        var firstElm;
+        var list = domEl.querySelectorAll(tababbleSelector);
+        if (list[0]) {
+          firstElm = list[0];
+        } else {
+          modal[0].setAttribute('tabindex', 0);
+          firstElm = modal[0];
+        }
+        return firstElm;
+      }
 
     }
   };
@@ -319,7 +353,7 @@ a11yBootstrapModule.directive('enforceFocus', ['$document', '$timeout',function(
 				<p>
 					Il nous reste à régler le problème de <kbd lang="en">Shift+Tab</kbd>. Il faut écouter les évenements <code lang="en">keydown</code>
 					sur le premier élément <code lang="en">(iElm)</code>. Si les touches <kbd lang="en">Shift+Tab</kbd> sont activés sur le premier élément
-					nous renvoyons au dernier élément. La fonction <code lang="en">lastFocusable</code> détermine le dernier élément focusable.
+					nous renvoyons au dernier élément. La fonction <code lang="en">focusLastElm</code> déplace le focus sur le dernier élément focusable.
 				</p>
 
 				<div class="highlight-doc">
@@ -328,30 +362,25 @@ a11yBootstrapModule.directive('enforceFocus', ['$document', '$timeout',function(
 a11yBootstrapModule.directive('enforceFocus', ['$document', '$timeout',function($document, $timeout){
   return {
     link: function($scope, iElm) {
+      var modal = iElm[0].querySelectorAll('.modal-dialog');
 
-      var tababbleSelector = 'a[href], area[href], input:not([disabled]),'+
-      ' button:not([disabled]),select:not([disabled]), textarea:not([disabled]),'+
-      ' iframe, object, embed, *[tabindex], *[contenteditable]';
-
-      //return lastFocusable element inside modal
-      function lastFocusable(domEl) {
+      var tababbleSelector = 'a[href], area[href], input:not([disabled]), button:not([disabled]),select:not([disabled]), textarea:not([disabled]), iframe, object, embed, *[tabindex], *[contenteditable]';
+      //focus last element inside modal
+      function focusLastElm(domEl) {
         var list = domEl.querySelectorAll(tababbleSelector);
-        return list[list.length - 1];
+        list[list.length - 1].focus();
       }
-
-      var lastEl = lastFocusable(iElm[0]);
-
       //focus lastElement when shitKey Tab on first element
       function shiftKeyTabTrap (evt) {
-        if(iElm[0] === evt.target && evt.shiftKey && evt.keyCode === 9){
-          lastEl.focus();
+        if(firstFocusable(iElm[0]) === evt.target && evt.shiftKey && evt.keyCode === 9){
+          focusLastElm(iElm[0]);
           evt.preventDefault();
         }
       }
       iElm.bind('keydown', shiftKeyTabTrap);
     }
   };
-}]);
+}])
 						</code>
 					</pre>
 				</div>
@@ -373,7 +402,7 @@ a11yBootstrapModule.directive('enforceFocus', ['$document', '$timeout',function(
       });
     }
   };
-}]);
+}])
 						</code>
 					</pre>
 				</div>
@@ -389,13 +418,17 @@ a11yBootstrapModule.directive('enforceFocus', ['$document', '$timeout',function(
 					l'ajout de l'élèment à la fin <code lang="en">&lt;div tabindex="0">&lt;/div></code> permet de piéger le focus.
 				</p>
 
+				<p>
+					On peut par la même occasion supprimer la fermeture de la modale lors du clique sur la <span lang="en">backdrop</span> <code>ng-click="close($event)"</code>.
+				</p>
+
 				<div class="highlight-doc">
 					<pre>
 						<code class="js" lang="en">
 angular.module("template/modal/window.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("template/modal/window.html",
-    "&lt;div>&lt;div enforce-focus tabindex=\"-1\" role=\"dialog\" class=\"modal fade\" ng-class=\"{in: animate}\" ng-style=\"{'z-index': 1050 + index*10, display: 'block'}\" ng-click=\"close($event)\">\n" +
-    "    &lt;div class=\"modal-dialog\" ng-class=\"{'modal-sm': size == 'sm', 'modal-lg': size == 'lg'}\">&lt;div class=\"modal-content\" modal-transclude>&lt;/div>&lt;/div>\n" +
+    "&lt;div>&lt;div enforce-focus tabindex=\"-1\" class=\"modal fade\" ng-class=\"{in: animate}\" ng-style=\"{'z-index': 1050 + index*10, display: 'block'}\">\n" +
+    "    &lt;div class=\"modal-dialog\" role=\"dialog\" ng-class=\"{'modal-sm': size == 'sm', 'modal-lg': size == 'lg'}\">&lt;div class=\"modal-content\" modal-transclude>&lt;/div>&lt;/div>\n" +
     "&lt;/div>&lt;div tabindex=\"0\">&lt;/div>&lt;/div>");
 }]);
 						</code>
@@ -405,7 +438,7 @@ angular.module("template/modal/window.html", []).run(["$templateCache", function
 				<h3 lang="en">Sémantique de la modale</h3>
 
 				<p>
-					Il manque toujours l'attribut <code lang="en">aria-labelledby</code>, qui peut facilement être ajouté dans le <span lang="en">template</span> pour faire référence au titre de notre modal.
+					Il manque toujours l'attribut <code lang="en">aria-labelledby</code>, qui peut facilement être ajouté dans le <span lang="en">template</span> pour faire référence au titre de notre modal. Le rôle <code lang="en">dialog</code> doit être correctement positionné sur la modale elle-même et l'attribut tabindex n'a pas besoin d'être positionné sur l'arrière de la modale.
 				</p>
 
 				<div class="highlight-doc">
@@ -413,8 +446,8 @@ angular.module("template/modal/window.html", []).run(["$templateCache", function
 						<code class="js" lang="en">
 angular.module("template/modal/window.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("template/modal/window.html",
-    "&lt;div>&lt;div enforce-focus tabindex=\"-1\" aria-labelledby=\"titre-modal\" role=\"dialog\" class=\"modal fade\" ng-class=\"{in: animate}\" ng-style=\"{'z-index': 1050 + index*10, display: 'block'}\" ng-click=\"close($event)\">\n" +
-    "    &lt;div class=\"modal-dialog\" ng-class=\"{'modal-sm': size == 'sm', 'modal-lg': size == 'lg'}\">&lt;div class=\"modal-content\" modal-transclude>&lt;/div>&lt;/div>\n" +
+    "&lt;div>&lt;div enforce-focus class=\"modal fade\" ng-class=\"{in: animate}\" ng-style=\"{'z-index': 1050 + index*10, display: 'block'}\">\n" +
+    "    &lt;div class=\"modal-dialog\" role=\"dialog\" aria-labelledby=\"titre-modal\" ng-class=\"{'modal-sm': size == 'sm', 'modal-lg': size == 'lg'}\">&lt;div class=\"modal-content\" modal-transclude>&lt;/div>&lt;/div>\n" +
     "&lt;/div>&lt;div tabindex=\"0\">&lt;/div>&lt;/div>");
 }]);
 						</code>

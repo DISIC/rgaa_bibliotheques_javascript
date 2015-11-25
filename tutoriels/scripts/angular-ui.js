@@ -51,14 +51,13 @@ angular.module('a11yBootstrap', ['ui.bootstrap'])
     link: function($scope, iElm) {
       //Save current focus
       var modalOpener = $document[0].activeElement;
-      $timeout(function(){
-        iElm[0].focus();
-      });
+      var modal = iElm[0].querySelectorAll('.modal-dialog');
 
       //enforceFocus inside modal
       function enforceFocus(evt) {
-        if (iElm[0] !== evt.target && !iElm[0].contains(evt.target)) {
-          iElm[0].focus();
+        var firstElm = firstFocusable(iElm[0]);
+        if ( firstElm !== evt.target && !iElm[0].contains(evt.target)) {
+          firstElm.focus();
         }
       }
       $document[0].addEventListener('focus', enforceFocus, true);
@@ -72,20 +71,37 @@ angular.module('a11yBootstrap', ['ui.bootstrap'])
       });
 
       var tababbleSelector = 'a[href], area[href], input:not([disabled]), button:not([disabled]),select:not([disabled]), textarea:not([disabled]), iframe, object, embed, *[tabindex], *[contenteditable]';
-      //return lastFocusable element inside modal
-      function lastFocusable(domEl) {
+      //focus last element inside modal
+      function focusLastElm(domEl) {
         var list = domEl.querySelectorAll(tababbleSelector);
-        return list[list.length - 1];
+        list[list.length - 1].focus();
       }
-      var lastEl = lastFocusable(iElm[0]);
+      //focus first element inside modal or modal himself
+      function firstFocusable(domEl) {
+        var firstElm;
+        var list = domEl.querySelectorAll(tababbleSelector);
+        if (list[0]) {
+          firstElm = list[0];
+        } else {
+          modal[0].setAttribute('tabindex', 0);
+          firstElm = modal[0];
+        }
+        return firstElm;
+      }
       //focus lastElement when shitKey Tab on first element
       function shiftKeyTabTrap (evt) {
-        if(iElm[0] === evt.target && evt.shiftKey && evt.keyCode === 9){
-          lastEl.focus();
+        if(firstFocusable(iElm[0]) === evt.target && evt.shiftKey && evt.keyCode === 9){
+          focusLastElm(iElm[0]);
           evt.preventDefault();
         }
       }
       iElm.bind('keydown', shiftKeyTabTrap);
+
+      $timeout(function(){
+        var firstElm = firstFocusable(iElm[0]);
+        firstElm.focus();
+      });
+
     }
   };
 }])
@@ -457,7 +473,7 @@ angular.module('template/accordion/accordion.html', []).run(['$templateCache', f
 
 angular.module("template/modal/window.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("template/modal/window.html",
-    "<div><div enforce-focus tabindex=\"-1\" aria-labelledby=\"titre-modal\" role=\"dialog\" class=\"modal fade\" ng-class=\"{in: animate}\" ng-style=\"{'z-index': 1050 + index*10, display: 'block'}\" ng-click=\"close($event)\">\n" +
-    "    <div class=\"modal-dialog\" ng-class=\"{'modal-sm': size == 'sm', 'modal-lg': size == 'lg'}\"><div class=\"modal-content\" modal-transclude></div></div>\n" +
+    "<div><div enforce-focus class=\"modal fade\" ng-class=\"{in: animate}\" ng-style=\"{'z-index': 1050 + index*10, display: 'block'}\" >\n" +
+    "    <div class=\"modal-dialog\" aria-labelledby=\"titre-modal\" role=\"dialog\" ng-class=\"{'modal-sm': size == 'sm', 'modal-lg': size == 'lg'}\"><div class=\"modal-content\" modal-transclude></div></div>\n" +
     "</div><div tabindex=\"0\"></div></div>");
 }]);
