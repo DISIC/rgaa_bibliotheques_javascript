@@ -704,6 +704,11 @@ var FocusTrap = React.createClass({
 							afin que l'utilisateur ne puisse pas tabuler hors de la fenêtre.
 						</p>
 
+						<p>
+							On s'assure aussi qu'un clic en dehors de la modale ne la ferme pas, en passant
+							la propriété <code lang="en">backdrop="static"</code>.
+						</p>
+
 						<div class="highlight-doc">
 							<pre>
 								<code class="js" data-lang="js" lang="en">
@@ -712,7 +717,7 @@ var AccessibleModal = React.createClass({
 	render: function() {
 		return (
 			&lt;FocusTrap&gt;
-				&lt;Modal {...this.props}&gt;
+				&lt;Modal {...this.props} backdrop="static"&gt;
 					{this.props.children}
 				&lt;/Modal&gt;
 			&lt;/FocusTrap&gt;
