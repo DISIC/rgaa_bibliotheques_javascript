@@ -407,7 +407,7 @@
 		render: function() {
 			return (
 				<FocusTrap>
-					<Modal {...this.props}>
+					<Modal {...this.props} backdrop="static">
 						{this.props.children}
 					</Modal>
 				</FocusTrap>
