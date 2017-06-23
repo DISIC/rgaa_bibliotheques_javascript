@@ -1,3 +1,7 @@
+> Ce dépôt contient une version dépréciée de l'étude.
+> Vous trouverez une version à jour à l'adresse suivante
+> https://github.com/DISIC/rgaa_bibliotheques-javascript
+
 # Accessibilité des bibliothèques JavaScript
 
 Une étude de l'accessibilité des principales bibliothèques JavaScript a donné lieu à deux types de ressources :
